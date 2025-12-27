@@ -15,7 +15,7 @@ function testLoginEndpoint() {
   const options = {
     hostname: 'localhost',
     port: 3000,
-    path: '/auth/login',
+    path: '/api/auth/login',
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -75,7 +75,7 @@ function testCurrentEndpoint() {
   const options = {
     hostname: 'localhost',
     port: 3000,
-    path: '/auth/current',
+    path: '/api/auth/current',
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -134,7 +134,7 @@ function testLogoutEndpoint() {
   const options = {
     hostname: 'localhost',
     port: 3000,
-    path: '/auth/logout',
+    path: '/api/auth/logout',
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

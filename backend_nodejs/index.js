@@ -21,7 +21,7 @@ app.get('/test', (req, res) => {
 });
 
 // 使用认证路由
-app.use('/auth', authRoutes);
+app.use('/api/auth', authRoutes);
 
 // 启动服务器
 const PORT = process.env.PORT || 3000;

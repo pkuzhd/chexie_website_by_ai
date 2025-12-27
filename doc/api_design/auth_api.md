@@ -14,16 +14,16 @@
 
 | 接口URL | 请求方法 | 功能描述 | 是否需要认证 |
 |---------|----------|----------|--------------|
-| `/auth/login` | POST | 用户登录，获取JWT令牌 | 否 |
-| `/auth/logout` | POST | 用户登出，使令牌失效 | 是 |
-| `/auth/current` | GET | 获取当前登录用户信息 | 是 |
+| `/api/auth/login` | POST | 用户登录，获取JWT令牌 | 否 |
+| `/api/auth/logout` | POST | 用户登出，使令牌失效 | 是 |
+| `/api/auth/current` | GET | 获取当前登录用户信息 | 是 |
 
 ## 4. 接口详细说明
 
 ### 4.1 登录接口
 
 #### 请求信息
-- **URL**: `/auth/login`
+- **URL**: `/api/auth/login`
 - **方法**: `POST`
 - **Content-Type**: `application/json`
 
@@ -91,7 +91,7 @@
 ### 4.2 登出接口
 
 #### 请求信息
-- **URL**: `/auth/logout`
+- **URL**: `/api/auth/logout`
 - **方法**: `POST`
 - **Authorization**: `Bearer <token>`
 
@@ -102,7 +102,7 @@
 #### 请求示例
 
 ```bash
-curl -X POST http://localhost:3000/auth/logout \
+curl -X POST http://localhost:3000/api/auth/logout \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 ```
 
@@ -134,7 +134,7 @@ curl -X POST http://localhost:3000/auth/logout \
 ### 4.3 获取当前用户信息接口
 
 #### 请求信息
-- **URL**: `/auth/current`
+- **URL**: `/api/auth/current`
 - **方法**: `GET`
 - **Authorization**: `Bearer <token>`
 
@@ -145,7 +145,7 @@ curl -X POST http://localhost:3000/auth/logout \
 #### 请求示例
 
 ```bash
-curl -X GET http://localhost:3000/auth/current \
+curl -X GET http://localhost:3000/api/auth/current \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 ```
 
