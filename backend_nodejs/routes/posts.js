@@ -4,7 +4,7 @@ const Posts = require('../models/Posts');
 const router = express.Router();
 
 // 1. 通过查询参数bid、tid、p、p_size获取分页帖子信息（p_size默认为12）；同时支持通过bid、tid和pid获取单个楼层信息（接口合并）
-router.get('/', async (req, res) => {
+async function getPosts(req, res) {
   try {
     const { bid, tid, p, p_size, pid } = req.query;
     
@@ -76,10 +76,10 @@ router.get('/', async (req, res) => {
     console.error('获取帖子列表或单个帖子失败:', error);
     res.status(500).json({ message: '服务器错误' });
   }
-});
+}
 
 // 3. 通过路径参数/:bid/:tid/:pid访问单个楼层的信息
-router.get('/:bid/:tid/:pid', async (req, res) => {
+async function getPostByPathParams(req, res) {
   try {
     const { bid, tid, pid } = req.params;
     
@@ -108,10 +108,10 @@ router.get('/:bid/:tid/:pid', async (req, res) => {
     console.error('获取帖子信息失败:', error);
     res.status(500).json({ message: '服务器错误' });
   }
-});
+}
 
 // 2. 通过fid访问单个楼层的信息
-router.get('/:fid', async (req, res) => {
+async function getPostByFid(req, res) {
   try {
     const { fid } = req.params;
     
@@ -138,8 +138,11 @@ router.get('/:fid', async (req, res) => {
     console.error('获取帖子信息失败:', error);
     res.status(500).json({ message: '服务器错误' });
   }
-});
+}
 
-
+// 路由定义集中放置
+router.get('/', getPosts);
+router.get('/:bid/:tid/:pid', getPostByPathParams);
+router.get('/:fid', getPostByFid);
 
 module.exports = router;
