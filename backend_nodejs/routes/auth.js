@@ -6,7 +6,7 @@ const UserInfo = require('../models/UserInfo');
 
 const router = express.Router();
 
-// 登录接口
+// 1. 登录接口
 router.post('/login', [
   // 表单验证
   body('username').notEmpty().withMessage('用户名不能为空'),
@@ -69,7 +69,7 @@ router.post('/login', [
   }
 });
 
-// 获取当前用户信息接口（需要认证）
+// 2. 获取当前用户信息接口（需要认证）
 router.get('/current', async (req, res) => {
   try {
     // 从请求头获取token
@@ -110,7 +110,7 @@ router.get('/current', async (req, res) => {
   }
 });
 
-// 登出接口（需要认证）
+// 3. 登出接口（需要认证）
 router.post('/logout', async (req, res) => {
   try {
     // 从请求头获取token

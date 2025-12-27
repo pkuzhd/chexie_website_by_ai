@@ -3,7 +3,7 @@ const UserInfo = require('../models/UserInfo');
 
 const router = express.Router();
 
-// 2. 查看多个用户的信息（JSON格式查询，不需要登录）
+// 1. 查看多个用户的信息（JSON格式查询，不需要登录）
 router.post('/', async (req, res) => {
   try {
     const { usernames } = req.body;
@@ -43,7 +43,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// 1. 查看单个用户的信息（不需要登录）
+// 2. 查看单个用户的信息（不需要登录）
 router.get('/:username', async (req, res) => {
   try {
     const { username } = req.params;
