@@ -5,7 +5,7 @@ function testThreadsDetailEndpoint(bid, tid, expectExists = true) {
   const options = {
     hostname: 'localhost',
     port: 3000,
-    path: `/api/threads/${bid}/${tid}`,
+    path: `/api/threads?bid=${bid}&tid=${tid}`,
     method: 'GET',
     headers: {
       'Content-Type': 'application/json'

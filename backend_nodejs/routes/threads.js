@@ -81,4 +81,37 @@ router.get('/', async (req, res) => {
 
 
 
+// 2. 通过路径参数获取单个主题帖信息：
+//    - GET /api/threads/1/2 获取单个主题帖
+router.get('/:bid/:tid', async (req, res) => {
+  try {
+    const { bid, tid } = req.params;
+    
+    // 验证bid和tid是否为有效的整数
+    const bidInt = parseInt(bid);
+    const tidInt = parseInt(tid);
+    
+    if (isNaN(bidInt) || isNaN(tidInt)) {
+      return res.status(400).json({ message: 'bid或tid参数不是有效的整数' });
+    }
+    
+    const thread = await Threads.findOne({
+      where: { bid: bidInt, tid: tidInt }
+    });
+    
+    if (!thread) {
+      return res.status(404).json({ message: '主题帖不存在' });
+    }
+    
+    res.json({
+      message: '获取主题帖信息成功',
+      data: thread
+    });
+  } catch (error) {
+    console.error('获取主题帖信息失败:', error);
+    res.status(500).json({ message: '服务器错误' });
+  }
+});
+
+
 module.exports = router;

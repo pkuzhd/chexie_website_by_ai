@@ -3,6 +3,7 @@ const { runAllAuthTests } = require('./auth/auth.test');
 const { runTests: runBoardinfoTests } = require('./boardinfo/boardinfo.test');
 const { runTests: runUserinfoTests } = require('./userinfo/userinfo.test');
 const { runTests: runThreadsTests } = require('./threads/threads.test');
+const { runTests: runPostsTests } = require('./posts/posts.test');
 
 // 测试/test接口
 async function testTestEndpoint() {
@@ -72,6 +73,8 @@ async function runAllTests() {
     await runUserinfoTests();
     console.log('\n' + '='.repeat(50) + '\n');
     await runThreadsTests();
+    console.log('\n' + '='.repeat(50) + '\n');
+    await runPostsTests();
     console.log('\n' + '='.repeat(50) + '\n');
     await runAllAuthTests();
     
