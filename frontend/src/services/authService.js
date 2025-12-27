@@ -41,16 +41,16 @@ apiClient.interceptors.response.use(
 export default {
   // 登录
   login(username, password) {
-    return apiClient.post('/auth/login', { username, password });
+    return apiClient.post('/api/auth/login', { username, password });
   },
   
   // 登出
   logout() {
-    return apiClient.post('/auth/logout');
+    return apiClient.post('/api/auth/logout');
   },
   
   // 获取当前用户信息
   getCurrentUser() {
-    return apiClient.get('/auth/current');
+    return apiClient.get('/api/auth/current');
   }
 };
