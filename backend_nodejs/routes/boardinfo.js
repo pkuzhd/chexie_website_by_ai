@@ -3,7 +3,7 @@ const BoardInfo = require('../models/BoardInfo');
 
 const router = express.Router();
 
-// 获取所有板块信息
+// 1. 获取所有板块信息（仅显示未隐藏的板块）
 router.get('/', async (req, res) => {
   try {
     // 查询所有板块信息，不包含隐藏的板块（hide=0）
@@ -22,7 +22,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// 获取单个板块信息
+// 2. 获取单个板块信息（通过路径参数/:bid）
 router.get('/:bid', async (req, res) => {
   try {
     const { bid } = req.params;
