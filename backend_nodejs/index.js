@@ -7,6 +7,7 @@ const sequelize = require('./config/db');
 
 // 导入路由
 const authRoutes = require('./routes/auth');
+const boardinfoRoutes = require('./routes/boardinfo');
 
 // 初始化Express应用
 const app = express();
@@ -22,6 +23,9 @@ app.get('/test', (req, res) => {
 
 // 使用认证路由
 app.use('/api/auth', authRoutes);
+
+// 使用板块信息路由
+app.use('/api/boardinfo', boardinfoRoutes);
 
 // 启动服务器
 const PORT = process.env.PORT || 3000;
