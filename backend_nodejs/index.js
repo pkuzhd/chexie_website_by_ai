@@ -10,6 +10,7 @@ const authRoutes = require('./routes/auth');
 const boardinfoRoutes = require('./routes/boardinfo');
 const userinfoRoutes = require('./routes/userinfo');
 const threadsRoutes = require('./routes/threads');
+const postsRoutes = require('./routes/posts');
 
 // 初始化Express应用
 const app = express();
@@ -34,6 +35,9 @@ app.use('/api/userinfo', userinfoRoutes);
 
 // 使用主题帖路由
 app.use('/api/threads', threadsRoutes);
+
+// 使用帖子路由
+app.use('/api/posts', postsRoutes);
 
 // 启动服务器
 const PORT = process.env.PORT || 3000;
