@@ -1,11 +1,90 @@
 const http = require('http');
 
-// 测试通过bid和tid获取单个主题帖信息接口
-function testThreadsDetailEndpoint(bid, tid, expectExists = true) {
+// 测试通过查询参数获取单个主题帖信息接口
+function testThreadsDetailQueryEndpoint(bid, tid, expectExists = true) {
   const options = {
     hostname: 'localhost',
     port: 3000,
     path: `/api/threads?bid=${bid}&tid=${tid}`,
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  };
+
+  return new Promise((resolve, reject) => {
+    const req = http.request(options, (res) => {
+      let data = '';
+
+      res.on('data', (chunk) => {
+        data += chunk;
+      });
+
+      res.on('end', () => {
+        console.log(`=== 通过查询参数获取主题帖信息接口测试结果 (bid: ${bid}, tid: ${tid}) ===`);
+        console.log(`状态码: ${res.statusCode}`);
+
+        try {
+          const jsonData = JSON.parse(data);
+          console.log(`响应体: ${JSON.stringify(jsonData, null, 2)}`);
+          
+          // 检查参数是否为有效的整数
+          const isValidBid = !isNaN(parseInt(bid));
+          const isValidTid = !isNaN(parseInt(tid));
+          
+          // 如果参数不是有效的整数，应该返回400状态码
+          if (!isValidBid || !isValidTid) {
+            if (res.statusCode === 400 && jsonData.message) {
+              console.log(`✅ 获取主题帖信息测试通过: 正确返回400状态码和参数错误信息`);
+              resolve(null);
+            } else {
+              console.log(`❌ 获取主题帖信息测试失败: 应该返回400状态码和参数错误信息`);
+              reject(new Error(`Should return 400 for invalid parameters`));
+            }
+          } else if (expectExists) {
+            // 参数有效，检查是否存在
+            if (res.statusCode === 200 && jsonData.message && jsonData.data && 
+                jsonData.data.bid === parseInt(bid) && jsonData.data.tid === parseInt(tid)) {
+              console.log(`✅ 获取主题帖信息测试通过`);
+              resolve(jsonData.data);
+            } else {
+              console.log(`❌ 获取主题帖信息测试失败: 响应格式不正确或数据不匹配`);
+              reject(new Error(`Get threads detail failed for bid ${bid}, tid ${tid}`));
+            }
+          } else {
+            // 参数有效，但不存在
+            if (res.statusCode === 404 && jsonData.message) {
+              console.log(`✅ 获取不存在的主题帖信息测试通过: 正确返回404状态码`);
+              resolve(null);
+            } else {
+              console.log(`❌ 获取不存在的主题帖信息测试失败: 应该返回404状态码`);
+              reject(new Error(`Should return 404 for non-existent thread`));
+            }
+          }
+        } catch (error) {
+          console.log(`❌ 获取主题帖信息测试失败: 响应不是有效的JSON格式`);
+          console.error('错误信息:', error);
+          reject(error);
+        }
+      });
+    });
+
+    req.on('error', (error) => {
+      console.log(`❌ 获取主题帖信息测试失败: 请求发送失败`);
+      console.error('错误信息:', error);
+      reject(error);
+    });
+
+    req.end();
+  });
+}
+
+// 测试通过路径参数获取单个主题帖信息接口
+function testThreadsDetailPathEndpoint(bid, tid, expectExists = true) {
+  const options = {
+    hostname: 'localhost',
+    port: 3000,
+    path: `/api/threads/${bid}/${tid}`,
     method: 'GET',
     headers: {
       'Content-Type': 'application/json'
@@ -208,32 +287,56 @@ async function runTests() {
   console.log('🚀 开始测试主题帖信息接口...\n');
   
   try {
-    // 测试场景1: 指定bid和tid访问
-    console.log('=== 测试场景1: 指定bid和tid访问 ===');
+    // 测试场景1: 通过查询参数获取主题帖信息
+    console.log('=== 测试场景1: 通过查询参数获取主题帖信息 ===');
     // 测试存在的主题帖 (bid=1, tid=4)
-    await testThreadsDetailEndpoint(1, 4, true);
+    await testThreadsDetailQueryEndpoint(1, 4, true);
     console.log('\n');
     // 测试存在的主题帖 (bid=1, tid=5)
-    await testThreadsDetailEndpoint(1, 5, true);
+    await testThreadsDetailQueryEndpoint(1, 5, true);
     console.log('\n');
     // 测试不存在的主题帖 (bid=1, tid=999)
-    await testThreadsDetailEndpoint(1, 999, false);
+    await testThreadsDetailQueryEndpoint(1, 999, false);
     console.log('\n');
     // 测试不存在的主题帖 (bid=999, tid=1)
-    await testThreadsDetailEndpoint(999, 1, false);
+    await testThreadsDetailQueryEndpoint(999, 1, false);
     console.log('\n');
     // 测试bid不是合法整数的情况 (bid='abc', tid=4)
-    await testThreadsDetailEndpoint('abc', 4, false);
+    await testThreadsDetailQueryEndpoint('abc', 4, false);
     console.log('\n');
     // 测试tid不是合法整数的情况 (bid=1, tid='xyz')
-    await testThreadsDetailEndpoint(1, 'xyz', false);
+    await testThreadsDetailQueryEndpoint(1, 'xyz', false);
     console.log('\n');
     // 测试bid和tid都不是合法整数的情况 (bid='abc', tid='xyz')
-    await testThreadsDetailEndpoint('abc', 'xyz', false);
+    await testThreadsDetailQueryEndpoint('abc', 'xyz', false);
     console.log('\n');
     
-    // 测试场景2: 指定bid，p_size和p访问
-    console.log('=== 测试场景2: 指定bid，p_size和p访问 ===');
+    // 测试场景2: 通过路径参数获取主题帖信息
+    console.log('=== 测试场景2: 通过路径参数获取主题帖信息 ===');
+    // 测试存在的主题帖 (bid=1, tid=4)
+    await testThreadsDetailPathEndpoint(1, 4, true);
+    console.log('\n');
+    // 测试存在的主题帖 (bid=1, tid=5)
+    await testThreadsDetailPathEndpoint(1, 5, true);
+    console.log('\n');
+    // 测试不存在的主题帖 (bid=1, tid=999)
+    await testThreadsDetailPathEndpoint(1, 999, false);
+    console.log('\n');
+    // 测试不存在的主题帖 (bid=999, tid=1)
+    await testThreadsDetailPathEndpoint(999, 1, false);
+    console.log('\n');
+    // 测试bid不是合法整数的情况 (bid='abc', tid=4)
+    await testThreadsDetailPathEndpoint('abc', 4, false);
+    console.log('\n');
+    // 测试tid不是合法整数的情况 (bid=1, tid='xyz')
+    await testThreadsDetailPathEndpoint(1, 'xyz', false);
+    console.log('\n');
+    // 测试bid和tid都不是合法整数的情况 (bid='abc', tid='xyz')
+    await testThreadsDetailPathEndpoint('abc', 'xyz', false);
+    console.log('\n');
+    
+    // 测试场景3: 指定bid，p_size和p访问
+    console.log('=== 测试场景3: 指定bid，p_size和p访问 ===');
     // 测试有内容的情况 (bid=1, p=1, p_size=10)
     await testThreadsListEndpoint(1, 1, 10, true);
     console.log('\n');
@@ -260,7 +363,8 @@ if (require.main === module) {
 
 // 导出测试函数，供其他测试文件使用
 module.exports = {
-  testThreadsDetailEndpoint,
+  testThreadsDetailQueryEndpoint,
+  testThreadsDetailPathEndpoint,
   testThreadsListEndpoint,
   testThreadsMissingParams,
   runTests
