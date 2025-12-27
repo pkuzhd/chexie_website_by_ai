@@ -1,6 +1,7 @@
 // 导入各个测试模块
 const { runAllAuthTests } = require('./auth/auth.test');
 const { runTests: runBoardinfoTests } = require('./boardinfo/boardinfo.test');
+const { runTests: runUserinfoTests } = require('./userinfo/userinfo.test');
 
 // 测试/test接口
 async function testTestEndpoint() {
@@ -66,6 +67,8 @@ async function runAllTests() {
     await testTestEndpoint();
     console.log('\n' + '='.repeat(50) + '\n');
     await runBoardinfoTests();
+    console.log('\n' + '='.repeat(50) + '\n');
+    await runUserinfoTests();
     console.log('\n' + '='.repeat(50) + '\n');
     await runAllAuthTests();
     
