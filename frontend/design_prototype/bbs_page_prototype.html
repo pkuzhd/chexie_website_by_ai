@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAPUBBS - 讨论区</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+
+        /* 导航栏样式 */
+        .navbar {
+            background-color: #fff;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 0.5rem 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            text-decoration: none;
+        }
+
+        .home-btn {
+            margin-left: 2rem;
+            text-decoration: none;
+            color: #555;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .home-btn:hover {
+            background-color: #f5f5f5;
+            color: #3498db;
+        }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .user-level {
+            margin: 0 1rem;
+            font-size: 0.9rem;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .personal-center,
+        .logout {
+            padding: 0.5rem 1rem;
+            margin-left: 0.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+
+        .personal-center {
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .personal-center:hover {
+            background-color: #e0e0e0;
+        }
+
+        .logout {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .logout:hover {
+            background-color: #c0392b;
+        }
+
+        /* 主体内容样式 */
+        .main-content {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .content-wrapper {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .section {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            flex: 1;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 1.5rem;
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 0.5rem;
+        }
+
+        /* 讨论版块样式 */
+        .forum-sections {
+            flex: 1.5;
+        }
+
+        .section-list {
+            list-style: none;
+        }
+
+        .section-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.3s;
+        }
+
+        .section-item:last-child {
+            border-bottom: none;
+        }
+
+        .section-item:hover {
+            background-color: #fafafa;
+        }
+
+        .section-info {
+            flex: 1;
+        }
+
+        .section-name {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #3498db;
+            text-decoration: none;
+            margin-bottom: 0.3rem;
+            display: inline-block;
+        }
+
+        .section-name:hover {
+            color: #2980b9;
+        }
+
+        .section-desc {
+            font-size: 0.9rem;
+            color: #777;
+        }
+
+        .section-stats {
+            text-align: right;
+            font-size: 0.9rem;
+            color: #999;
+        }
+
+        .stats-today,
+        .stats-total {
+            display: block;
+        }
+
+        /* 帖子列表样式 */
+        .post-list {
+            margin-top: 1.5rem;
+        }
+
+        .post-item {
+            padding: 1rem 0;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.3s;
+        }
+
+        .post-item:last-child {
+            border-bottom: none;
+        }
+
+        .post-item:hover {
+            background-color: #fafafa;
+        }
+
+        .post-content {
+            margin-bottom: 0.5rem;
+        }
+
+        .post-title {
+            text-decoration: none;
+            color: #3498db;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .post-title:hover {
+            color: #2980b9;
+        }
+
+        .post-title .category {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .post-title .tag {
+            font-size: 0.8rem;
+            padding: 0.1rem 0.4rem;
+            border-radius: 3px;
+            margin-right: 0.5rem;
+            font-weight: bold;
+        }
+
+        .tag.pinned {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .tag.hot {
+            background-color: #f39c12;
+            color: white;
+        }
+
+        .post-meta {
+            font-size: 0.8rem;
+            color: #777;
+        }
+
+        .author-name {
+            margin-right: 1rem;
+        }
+
+        .post-stats {
+            margin-left: 1rem;
+        }
+
+        .reply-count,
+        .view-count {
+            margin-left: 0.5rem;
+        }
+
+        /* 底部信息样式 */
+        .footer {
+            background-color: white;
+            border-top: 1px solid #e0e0e0;
+            padding: 1rem;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #777;
+            margin-top: 2rem;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .navbar-container {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .home-btn {
+                margin-left: 0;
+                margin-top: 0.5rem;
+            }
+
+            .navbar-right {
+                width: 100%;
+                margin-top: 0.5rem;
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+
+            .user-level {
+                margin: 0;
+            }
+
+            .content-wrapper {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+
+            .section {
+                padding: 1rem;
+            }
+
+            .section-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .section-stats {
+                margin-top: 0.5rem;
+                text-align: left;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .navbar-right {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .user-avatar {
+                margin: 0 auto;
+            }
+
+            .user-level {
+                text-align: center;
+                margin: 0.5rem 0;
+            }
+
+            .personal-center,
+            .logout {
+                width: 100%;
+                margin-left: 0;
+            }
+
+            .section-title {
+                font-size: 1rem;
+            }
+
+            .section-name {
+                font-size: 1rem;
+            }
+
+            .post-title {
+                font-size: 0.9rem;
+            }
+
+            .post-title .tag {
+                font-size: 0.7rem;
+            }
+
+            .post-meta {
+                font-size: 0.75rem;
+            }
+
+            .post-stats {
+                display: block;
+                margin-left: 0;
+                margin-top: 0.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-left">
+                <a href="#" class="logo">CAPUBBS</a>
+                <a href="#" class="home-btn">首页</a>
+            </div>
+            <div class="navbar-right logged-in">
+                <img src="data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 16 16'%3e%3cpath d='M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z'/%3e%3c/svg%3e" alt="用户头像" class="user-avatar">
+                <span class="user-level">Lv.5</span>
+                <button class="personal-center">个人中心</button>
+                <button class="logout">退出登录</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主体内容区 -->
+    <div class="main-content">
+        <div class="content-wrapper">
+            <!-- 讨论版块 -->
+            <div class="section forum-sections">
+                <h2 class="section-title">讨论版块</h2>
+                <ul class="section-list">
+                    <li class="section-item">
+                        <div class="section-info">
+                            <a href="#" class="section-name">实践部讨论区</a>
+                            <p class="section-desc">实践部相关活动和通知</p>
+                        </div>
+                        <div class="section-stats">
+                            <span class="stats-today">今日: 5</span>
+                            <span class="stats-total">总帖: 1245</span>
+                        </div>
+                    </li>
+                    <li class="section-item">
+                        <div class="section-info">
+                            <a href="#" class="section-name">文体部讨论区</a>
+                            <p class="section-desc">文体部相关活动和通知</p>
+                        </div>
+                        <div class="section-stats">
+                            <span class="stats-today">今日: 3</span>
+                            <span class="stats-total">总帖: 892</span>
+                        </div>
+                    </li>
+                    <li class="section-item">
+                        <div class="section-info">
+                            <a href="#" class="section-name">执委会讨论区</a>
+                            <p class="section-desc">执委会相关工作和决策</p>
+                        </div>
+                        <div class="section-stats">
+                            <span class="stats-today">今日: 1</span>
+                            <span class="stats-total">总帖: 567</span>
+                        </div>
+                    </li>
+                    <li class="section-item">
+                        <div class="section-info">
+                            <a href="#" class="section-name">活动分享区</a>
+                            <p class="section-desc">各类活动的分享和总结</p>
+                        </div>
+                        <div class="section-stats">
+                            <span class="stats-today">今日: 8</span>
+                            <span class="stats-total">总帖: 2134</span>
+                        </div>
+                    </li>
+                    <li class="section-item">
+                        <div class="section-info">
+                            <a href="#" class="section-name">技术交流区</a>
+                            <p class="section-desc">技术问题交流和学习</p>
+                        </div>
+                        <div class="section-stats">
+                            <span class="stats-today">今日: 6</span>
+                            <span class="stats-total">总帖: 1567</span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 论坛热点 -->
+            <div class="section forum-hot">
+                <h2 class="section-title">论坛热点</h2>
+                
+                <!-- 全局置顶帖子 -->
+                <div class="post-list">
+                    <h3 class="section-title" style="font-size: 1rem; margin-bottom: 1rem;">全局置顶帖子</h3>
+                    <div class="post-item">
+                        <div class="post-content">
+                            <a href="#" class="post-title">
+                                <span class="tag pinned">[置顶]</span>
+                                <span class="category">【公告】</span>论坛使用规范及违规处理办法
+                            </a>
+                        </div>
+                        <div class="post-meta">
+                            <span class="author-name">管理员</span>
+                            <span class="post-time">2025-12-10 09:00:00</span>
+                            <span class="post-stats">
+                                <span class="reply-count">回复: 45</span>
+                                <span class="view-count">浏览: 1234</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="post-item">
+                        <div class="post-content">
+                            <a href="#" class="post-title">
+                                <span class="tag pinned">[置顶]</span>
+                                <span class="category">【执委会】</span>2026秋季执委会通知
+                            </a>
+                        </div>
+                        <div class="post-meta">
+                            <span class="author-name">主席团</span>
+                            <span class="post-time">2025-12-26 14:13:11</span>
+                            <span class="post-stats">
+                                <span class="reply-count">回复: 23</span>
+                                <span class="view-count">浏览: 890</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 热门帖子 -->
+                <div class="post-list">
+                    <h3 class="section-title" style="font-size: 1rem; margin-bottom: 1rem;">热门帖子</h3>
+                    <div class="post-item">
+                        <div class="post-content">
+                            <a href="#" class="post-title">
+                                <span class="tag hot">[热门]</span>
+                                <span class="category">【实践部】</span>25-26年度押后考挂标准＆新增押后名单
+                            </a>
+                        </div>
+                        <div class="post-meta">
+                            <span class="author-name">石市黄三</span>
+                            <span class="post-time">2025-12-27 16:19:35</span>
+                            <span class="post-stats">
+                                <span class="reply-count">回复: 78</span>
+                                <span class="view-count">浏览: 2345</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="post-item">
+                        <div class="post-content">
+                            <a href="#" class="post-title">
+                                <span class="tag hot">[热门]</span>
+                                <span class="category">【2024实践团】</span>生日祝福塔楼 - 7哥生日吃披萨快乐！
+                            </a>
+                        </div>
+                        <div class="post-meta">
+                            <span class="author-name">dudu</span>
+                            <span class="post-time">2025-12-27 16:10:50</span>
+                            <span class="post-stats">
+                                <span class="reply-count">回复: 56</span>
+                                <span class="view-count">浏览: 1876</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="post-item">
+                        <div class="post-content">
+                            <a href="#" class="post-title">
+                                <span class="tag hot">[热门]</span>
+                                <span class="category">【熬夜比赛】</span>今天起正式开赛！
+                            </a>
+                        </div>
+                        <div class="post-meta">
+                            <span class="author-name">Annan</span>
+                            <span class="post-time">2025-12-27 03:47:16</span>
+                            <span class="post-stats">
+                                <span class="reply-count">回复: 43</span>
+                                <span class="view-count">浏览: 1567</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="post-item">
+                        <div class="post-content">
+                            <a href="#" class="post-title">
+                                <span class="tag hot">[热门]</span>
+                                <span class="category">【文体部】</span>2025-2026秋季恢复性训练日志&冬训日志
+                            </a>
+                        </div>
+                        <div class="post-meta">
+                            <span class="author-name">石人</span>
+                            <span class="post-time">2025-12-27 11:18:00</span>
+                            <span class="post-stats">
+                                <span class="reply-count">回复: 38</span>
+                                <span class="view-count">浏览: 1345</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="post-item">
+                        <div class="post-content">
+                            <a href="#" class="post-title">
+                                <span class="tag hot">[热门]</span>
+                                【五台山穿越行记】人为什么要走一次朝台
+                            </a>
+                        </div>
+                        <div class="post-meta">
+                            <span class="author-name">小瓜</span>
+                            <span class="post-time">2025-12-26 12:18:15</span>
+                            <span class="post-stats">
+                                <span class="reply-count">回复: 32</span>
+                                <span class="view-count">浏览: 1123</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部信息栏 -->
+    <div class="footer">
+        <p>CAPUBBS © 2025 | 联系方式：admin@capubbs.com | 友情链接：<a href="#">相关网站</a></p>
+    </div>
+</body>
+</html>
