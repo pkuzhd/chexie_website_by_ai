@@ -191,7 +191,7 @@ function testTokenInvalidation() {
   const options = {
     hostname: 'localhost',
     port: 3000,
-    path: '/auth/current',
+    path: '/api/auth/current',
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -255,5 +255,12 @@ async function runAllAuthTests() {
   }
 }
 
-// 执行测试
-runAllAuthTests();
+// 当直接运行此文件时执行测试
+if (require.main === module) {
+  runAllAuthTests();
+}
+
+// 导出测试函数，供其他测试文件使用
+module.exports = {
+  runAllAuthTests
+};
