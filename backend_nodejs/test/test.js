@@ -2,6 +2,7 @@
 const { runAllAuthTests } = require('./auth/auth.test');
 const { runTests: runBoardinfoTests } = require('./boardinfo/boardinfo.test');
 const { runTests: runUserinfoTests } = require('./userinfo/userinfo.test');
+const { runTests: runThreadsTests } = require('./threads/threads.test');
 
 // 测试/test接口
 async function testTestEndpoint() {
@@ -69,6 +70,8 @@ async function runAllTests() {
     await runBoardinfoTests();
     console.log('\n' + '='.repeat(50) + '\n');
     await runUserinfoTests();
+    console.log('\n' + '='.repeat(50) + '\n');
+    await runThreadsTests();
     console.log('\n' + '='.repeat(50) + '\n');
     await runAllAuthTests();
     
