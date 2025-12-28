@@ -1,5 +1,6 @@
 const express = require('express');
 const Posts = require('../models/Posts');
+const { requireAuthForBid1 } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -141,8 +142,8 @@ async function getPostByFid(req, res) {
 }
 
 // 路由定义集中放置
-router.get('/', getPosts);
-router.get('/:bid/:tid/:pid', getPostByPathParams);
+router.get('/', requireAuthForBid1, getPosts);
+router.get('/:bid/:tid/:pid', requireAuthForBid1, getPostByPathParams);
 router.get('/:fid', getPostByFid);
 
 module.exports = router;

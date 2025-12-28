@@ -1,5 +1,6 @@
 const express = require('express');
 const Threads = require('../models/Threads');
+const { requireAuthForBid1 } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -7,7 +8,7 @@ const router = express.Router();
 //    - GET /api/threads?bid=1&tid=2 获取单个主题帖
 //    - GET /api/threads?bid=1&p=1 获取分页主题帖列表（p_size默认为10）
 //    支持显式key的查询参数格式
-router.get('/', async (req, res) => {
+router.get('/', requireAuthForBid1, async (req, res) => {
   try {
     const { bid, tid, p, p_size } = req.query;
     
@@ -83,7 +84,7 @@ router.get('/', async (req, res) => {
 
 // 2. 通过路径参数获取单个主题帖信息：
 //    - GET /api/threads/1/2 获取单个主题帖
-router.get('/:bid/:tid', async (req, res) => {
+router.get('/:bid/:tid', requireAuthForBid1, async (req, res) => {
   try {
     const { bid, tid } = req.params;
     
