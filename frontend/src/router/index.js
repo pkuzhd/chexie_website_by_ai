@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Login from '../components/Login.vue';
 import Navbar from '../components/Navbar.vue';
+import ForumContent from '../components/ForumContent.vue';
+import BBSMain from '../components/BBSMain.vue';
 
 // 导入其他组件（示例）
 // import Home from '../components/Home.vue';
@@ -50,6 +52,39 @@ const routes = [
     }
   },
   {
+    path: '/content',
+    name: 'ForumContent',
+    components: {
+      default: ForumContent,
+      navbar: Navbar
+    },
+    meta: {
+      requiresAuth: false // bid=2不需要登录即可访问
+    }
+  },
+  {
+    path: '/bbs/content/',
+    name: 'BBSForumContent',
+    components: {
+      default: ForumContent,
+      navbar: Navbar
+    },
+    meta: {
+      requiresAuth: false // bid=2不需要登录即可访问
+    }
+  },
+  {
+    path: '/bbs/main/',
+    name: 'BBSMain',
+    components: {
+      default: BBSMain,
+      navbar: Navbar
+    },
+    meta: {
+      requiresAuth: false // 版面页面不需要登录即可访问
+    }
+  },
+  {
     path: '/login',
     name: 'Login',
     component: Login,
@@ -70,11 +105,12 @@ router.beforeEach((to, from, next) => {
   const isAuthenticated = localStorage.getItem('token') !== null;
   
   if (requiresAuth && !isAuthenticated) {
-    // 需要登录但未登录，跳转到登录页
-    next('/login');
+    // 需要登录但未登录，跳转到登录页并携带原路径作为redirect参数
+    next({ path: '/login', query: { redirect: to.fullPath } });
   } else if (!requiresAuth && isAuthenticated && to.path === '/login') {
-    // 已登录且访问登录页，重定向到首页
-    next('/');
+    // 已登录且访问登录页，检查是否有redirect参数
+    const redirectPath = to.query.redirect || '/';
+    next(redirectPath);
   } else {
     // 其他情况正常访问
     next();
