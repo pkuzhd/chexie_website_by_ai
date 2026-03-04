@@ -29,6 +29,7 @@ dist-ssr
 .env.*.local
 
 # Backend
-backend/node_modules
-backend/logs
-backend/.env
+backend_nodejs/node_modules
+backend_nodejs/logs
+backend_nodejs/.env
+backend_nodejs/scripts/
