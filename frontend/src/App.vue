@@ -1,5 +1,6 @@
 <script setup>
-// 路由会自动渲染组件
+import './assets/general.css';
+import './assets/style.css';
 </script>
 
 <template>
@@ -9,7 +10,7 @@
     
     <!-- 主要内容区域 -->
     <main class="main-content">
-      <router-view />
+      <router-view name="default" />
     </main>
   </div>
 </template>
