@@ -1,6 +1,6 @@
 body{
     background-color: #ABC9B6;
-    background-image: url("../../assets/images/static/bg.jpg");
+    background-image: url("images/bg.jpg");
     background-position: center top;
     background-repeat: no-repeat;
     margin: 0;
@@ -164,7 +164,7 @@ div.navigation a{
 	text-decoration: underline;
 }
 div.back{
-	background-image: url("back.png");
+	background-image: url("./images/back.png");
 	background-repeat: no-repeat;
 	background-size: 100%,100%;
 	width: 80px;

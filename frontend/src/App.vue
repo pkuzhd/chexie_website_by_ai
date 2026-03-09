@@ -17,7 +17,7 @@ import './assets/style.css';
 
 <style>
 /* 全局样式 */
-:root {
+/* :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -40,36 +40,36 @@ a {
 
 a:hover {
   color: #535bf2;
-}
+} */
 
-body {
+/* body {
   margin: 0;
   display: flex;
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
-}
+} */
 
-#app {
+/* #app {
   width: 100%;
   margin: 0 auto;
   text-align: center;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-}
+} */
 
-.main-content {
+/* .main-content {
   flex: 1;
   padding: 2rem;
   width: 100%;
   box-sizing: border-box;
-}
+} */
 
 /* 响应式设计 */
-@media (max-width: 600px) {
+/* @media (max-width: 600px) {
   .main-content {
     padding: 1rem;
   }
-}
+} */
 </style>

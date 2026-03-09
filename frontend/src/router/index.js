@@ -3,6 +3,9 @@ import Login from '../components/Login.vue';
 import Navbar from '../components/Navbar.vue';
 import ForumContent from '../components/ForumContent.vue';
 import BBSMain from '../components/BBSMain.vue';
+import BBSClassic from '../components/BBSClassic.vue';
+import Test from '../components/Test.vue';
+
 
 // 导入其他组件（示例）
 // import Home from '../components/Home.vue';
@@ -82,6 +85,28 @@ const routes = [
     },
     meta: {
       requiresAuth: false // 版面页面不需要登录即可访问
+    }
+  },
+  {
+    path: '/bbs/classic/',
+    name: 'BBSClassic',
+    components: {
+      default: BBSClassic,
+      navbar: Navbar
+    },
+    meta: {
+      requiresAuth: false // 经典版面页面不需要登录即可访问
+    }
+  },
+  {
+    path: '/bbs/test/',
+    name: 'Test',
+    components: {
+      default: Test,
+      // navbar: Test 
+    },
+    meta: {
+      requiresAuth: false
     }
   },
   {
