@@ -1,4 +1,5 @@
 const express = require('express');
+const { Op } = require('sequelize');
 const Threads = require('../models/Threads');
 const { requireAuthForBid1 } = require('../middleware/auth');
 
@@ -46,25 +47,42 @@ router.get('/', requireAuthForBid1, async (req, res) => {
       // 处理分页参数，默认值
       const page = parseInt(p) || 1;
       const pageSize = parseInt(p_size) || 10;
-      const offset = (page - 1) * pageSize;
+      const start = (page - 1) * pageSize;
+      const extr = 0;
       
-      // 查询主题帖信息
+      // 使用Sequelize ORM查询
       const threads = await Threads.findAll({
-        where: { bid: bidInt },
-        limit: pageSize,
-        offset: offset,
-        order: [['timestamp', 'DESC']] // 按时间戳降序排列，最新的主题帖在前
+        where: { 
+          bid: bidInt,
+          extr: { [Op.gte]: extr }
+        },
+        limit: 25,
+        offset: start,
+        order: [
+          ['top', 'DESC'],
+          ['timestamp', 'DESC']
+        ]
+      });
+      
+      // 为每个结果添加global_top字段
+      const threadsWithGlobalTop = threads.map(thread => {
+        const threadData = thread.toJSON();
+        threadData.global_top = 0;
+        return threadData;
       });
       
       // 获取总记录数
       const total = await Threads.count({
-        where: { bid: bidInt }
+        where: { 
+          bid: bidInt,
+          extr: { [Op.gte]: extr }
+        }
       });
       
       res.json({
         message: '获取主题帖列表成功',
         data: {
-          threads,
+          threads: threadsWithGlobalTop,
           pagination: {
             current_page: page,
             page_size: pageSize,
