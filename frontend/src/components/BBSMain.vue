@@ -25,6 +25,7 @@ const popoverStyle = ref({});
 const searchKeyword = ref('');
 const searchType = ref('thread');
 const searchRange = ref('1');
+const isClickDisabled = ref(false);
 
 // 搜索相关
 const showMore = ref(false);
@@ -130,24 +131,45 @@ const loadThreads = async () => {
   }
 };
 
-// 跳转到板块
+// 跳转到板块（带防抖机制）
 const goToBoard = (targetBid) => {
+  if (isClickDisabled.value) {
+    return;
+  }
+  
+  isClickDisabled.value = true;
+  
   bid.value = targetBid;
   page.value = 1;
   showMenu.value = false;
   router.push({ query: { bid: targetBid, p: 1 } });
+  
+  setTimeout(() => {
+    isClickDisabled.value = false;
+  }, 500);
 };
 
-// 跳转到页面
+// 跳转到页面（带防抖机制）
 const goToPage = (targetPage, event) => {
   if (event && (event.ctrlKey || event.metaKey || event.button === 1)) {
     event.preventDefault();
     window.open(`?bid=${bid.value}&p=${targetPage}`, '_blank');
-  } else {
-    if (event) event.preventDefault();
-    page.value = targetPage;
-    router.push({ query: { bid: bid.value, p: targetPage } });
+    return;
   }
+  if (event) event.preventDefault();
+  
+  if (isClickDisabled.value) {
+    return;
+  }
+  
+  isClickDisabled.value = true;
+  
+  page.value = targetPage;
+  router.push({ query: { bid: bid.value, p: targetPage } });
+  
+  setTimeout(() => {
+    isClickDisabled.value = false;
+  }, 500);
 };
 
 // 格式化日期
