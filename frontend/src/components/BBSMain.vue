@@ -107,7 +107,6 @@ const loadBoardInfo = async () => {
 
 // 加载主题帖列表
 const loadThreads = async () => {
-  isLoading.value = true;
   error.value = null;
   
   try {
