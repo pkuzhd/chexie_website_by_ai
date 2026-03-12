@@ -1,4 +1,5 @@
 const express = require('express');
+const compression = require('compression');
 require('dotenv').config();
 const cors = require('cors');
 
@@ -17,6 +18,7 @@ const app = express();
 
 // 配置中间件
 app.use(express.json());
+app.use(compression());
 app.use(cors());
 
 // 定义/test接口
