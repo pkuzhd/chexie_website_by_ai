@@ -151,12 +151,13 @@ const goToBoard = (targetBid) => {
 
 // 跳转到页面（带防抖机制）
 const goToPage = (targetPage, event) => {
-  if (event && (event.ctrlKey || event.metaKey || event.button === 1)) {
+  if (event) {
     event.preventDefault();
-    window.open(`?bid=${bid.value}&p=${targetPage}`, '_blank');
-    return;
+    if (event.ctrlKey || event.metaKey || event.button === 1) {
+      window.open(`?bid=${bid.value}&p=${targetPage}`, '_blank');
+      return;
+    }
   }
-  if (event) event.preventDefault();
   
   if (isClickDisabled.value) {
     return;
