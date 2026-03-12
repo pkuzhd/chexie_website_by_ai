@@ -21,6 +21,7 @@ const boards = ref([]);
 const isLoading = ref(true);
 const error = ref(null);
 const showMenu = ref(false);
+const popoverStyle = ref({});
 const searchKeyword = ref('');
 const searchType = ref('thread');
 const searchRange = ref('1');
@@ -59,6 +60,13 @@ const searchTimeChange = () => {
 const showMoreSearch = () => {
   showMore.value = true;
   searchTimeChange();
+};
+
+// 显示/隐藏菜单
+const showMenuFunc = (show) => {
+  showMenu.value = show;
+  // 使用 Vue 响应式方法设置样式
+  popoverStyle.value = show ? { display: 'block' } : { display: 'none' };
 };
 
 // 处理链接点击
@@ -285,7 +293,7 @@ watch(() => route.query, (newQuery) => {
         <span style="margin-left:32px;"><b>返回</b></span>
       </div>
       <span style="float:left;margin-left:20px;position:relative;"> 
-        <a href="#" @mouseover="showMenu = true">CAPUBBS</a>
+        <a href="#" @mouseenter="showMenuFunc(true)">CAPUBBS</a>
         <span>&nbsp;&gt;&nbsp;</span>
         <a href="#">{{ boardInfo?.bbstitle }}</a>
         <span>&nbsp;&gt;&nbsp;</span>
@@ -294,9 +302,9 @@ watch(() => route.query, (newQuery) => {
         <a href="#" style="margin-left:50px">查看精品区</a>
         <div 
           class="popover" 
-          id="popover" 
-          v-show="showMenu" 
-          @mouseleave="showMenu = false"
+          :style="popoverStyle" 
+          v-if="showMenu" 
+          @mouseleave="showMenuFunc(false)"
         >
           <table class="popover">
             <tr v-for="b in boards" :key="b.bid">
