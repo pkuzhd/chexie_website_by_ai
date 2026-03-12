@@ -153,7 +153,6 @@ const jumpPageNumbers = ref([]);
 
 // 计算页码的函数
 const calculatePages = () => {
-  console.log('boardInfo.value?.topics:', boardInfo.value?.topics);
   // 计算总页数
   totalPages.value = Math.max(1, Math.ceil((boardInfo.value?.topics || 0) / 25));
   
@@ -301,13 +300,13 @@ watch(() => route.query, (newQuery) => {
         <tr>
           <td align="left" style="text-align:left;line-height:30px">
             <div class="searchLogo"></div>
-            <form action="../search/" method="post" target="_blank">
+            <form action="/bbs/search/" method="post" target="_blank">
               <input type="text" name="keyword" class="search" placeholder="本版内搜索" style="margin-right: 4px;">
               <select name="type" style="margin-right: 4px;">
                 <option selected value="thread">搜索帖子标题</option>
                 <option value="post">搜索帖子正文</option>
               </select>
-              <select id="search_range" name="time" @change="searchTimeChange" style="margin-right: 4px;">
+              <select id="search_range" name="time" v-model="searchRange" @change="searchTimeChange" style="margin-right: 4px;">
                 <option selected value="1">近一年</option>
                 <option value="2">近两年</option>
                 <option value="2000">不限</option>
