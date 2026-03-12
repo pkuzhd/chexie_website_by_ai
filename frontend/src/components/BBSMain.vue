@@ -61,6 +61,14 @@ const showMoreSearch = () => {
   searchTimeChange();
 };
 
+// 处理链接点击
+const handleLink = (event, url) => {
+  if (event && (event.ctrlKey || event.metaKey || event.button === 1)) {
+    event.preventDefault();
+    window.open(url, '_blank');
+  }
+};
+
 // 加载板块列表
 const loadBoards = async () => {
   try {
@@ -123,9 +131,15 @@ const goToBoard = (targetBid) => {
 };
 
 // 跳转到页面
-const goToPage = (targetPage) => {
-  page.value = targetPage;
-  router.push({ query: { bid: bid.value, p: targetPage } });
+const goToPage = (targetPage, event) => {
+  if (event && (event.ctrlKey || event.metaKey || event.button === 1)) {
+    event.preventDefault();
+    window.open(`?bid=${bid.value}&p=${targetPage}`, '_blank');
+  } else {
+    if (event) event.preventDefault();
+    page.value = targetPage;
+    router.push({ query: { bid: bid.value, p: targetPage } });
+  }
 };
 
 // 格式化日期
@@ -370,6 +384,7 @@ watch(() => route.query, (newQuery) => {
               <span>&nbsp;</span>
               <router-link 
                 :to="`/bbs/content?bid=${bid}&tid=${thread.tid}&p=1`"
+                @click="handleLink($event, `/bbs/content?bid=${bid}&tid=${thread.tid}&p=1`)"
               >
                 {{ thread.title }}
               </router-link>
@@ -418,15 +433,15 @@ watch(() => route.query, (newQuery) => {
       <a 
         v-if="page > 1" 
         class="page" 
-        href="javascript:void(0)"
-        @click="goToPage(1)"
+        :href="`?bid=${bid}&p=1`"
+        @click="goToPage(1, $event)"
       >首页</a>
 
       <a 
         v-if="page > 1" 
         class="page" 
-        href="javascript:void(0)"
-        @click="goToPage(page - 1)"
+        :href="`?bid=${bid}&p=${page - 1}`"
+        @click="goToPage(page - 1, $event)"
       >上一页</a>
       
       <template v-for="p in pageNumbers" :key="p">
@@ -437,23 +452,23 @@ watch(() => route.query, (newQuery) => {
         <a 
           v-else
           class="page"
-          href="javascript:void(0)"
-          @click="goToPage(p)"
+          :href="`?bid=${bid}&p=${p}`"
+          @click="goToPage(p, $event)"
         >{{ p }}</a>
       </template>
       
       <a 
         v-if="page < totalPages" 
         class="page" 
-        href="javascript:void(0)"
-        @click="goToPage(page + 1)"
+        :href="`?bid=${bid}&p=${page + 1}`"
+        @click="goToPage(page + 1, $event)"
       >下一页</a>
       
       <a 
         v-if="page < totalPages" 
         class="page" 
-        href="javascript:void(0)"
-        @click="goToPage(totalPages)"
+        :href="`?bid=${bid}&p=${totalPages}`"
+        @click="goToPage(totalPages, $event)"
       >尾页</a>
       <span>&nbsp;跳转到：</span>
       <select @change="goToPage(parseInt($event.target.value))">
@@ -470,10 +485,16 @@ watch(() => route.query, (newQuery) => {
     <div class="editip" id="editip">
       <span class="editip">
         <span>您需要&nbsp;</span>
-        <router-link :to="`/login?from=${encodeURIComponent($route.fullPath)}`">登录</router-link>
+        <router-link 
+          :to="`/login?from=${encodeURIComponent($route.fullPath)}`"
+          @click="handleLink($event, `/login?from=${encodeURIComponent($route.fullPath)}`)"
+        >登录</router-link>
         <span>&nbsp;</span>
         <span>后才能发表主题；没有账号？&nbsp;</span>
-        <router-link to="/register">现在注册</router-link>
+        <router-link 
+          to="/register"
+          @click="handleLink($event, '/register')"
+        >现在注册</router-link>
         <span>&nbsp;</span>
       </span>
     </div>
