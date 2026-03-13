@@ -15,6 +15,7 @@ const API_HOST = config.API_HOST;
 // 响应式数据
 const bid = ref(2);
 const page = ref(1);
+const extr = ref(0);
 const boardInfo = ref(null);
 const threads = ref([]);
 const boards = ref([]);
@@ -114,6 +115,7 @@ const loadThreads = async () => {
       params: {
         bid: bid.value,
         p: page.value,
+        extr: extr.value,
         p_size: 25
       }
     });
@@ -138,8 +140,6 @@ const goToBoard = (targetBid) => {
   
   isClickDisabled.value = true;
   
-  bid.value = targetBid;
-  page.value = 1;
   showMenu.value = false;
   router.push({ query: { bid: targetBid, p: 1 } });
   
@@ -164,8 +164,11 @@ const goToPage = (targetPage, event) => {
   
   isClickDisabled.value = true;
   
-  page.value = targetPage;
-  router.push({ query: { bid: bid.value, p: targetPage } });
+  if (extr.value === 1) {
+    router.push({ query: { bid: bid.value, p: targetPage, extr: 1 } });
+  } else {
+    router.push({ query: { bid: bid.value, p: targetPage } });
+  }
   
   setTimeout(() => {
     isClickDisabled.value = false;
@@ -198,7 +201,7 @@ const jumpPageNumbers = ref([]);
 // 计算页码的函数
 const calculatePages = () => {
   // 计算总页数
-  totalPages.value = Math.max(1, Math.ceil((boardInfo.value?.topics || 0) / 25));
+  totalPages.value = Math.max(1, Math.ceil((extr.value === 1 ? (boardInfo.value?.extr || 0) : (boardInfo.value?.topics || 0)) / 25));
   
   // 生成分页显示的页码数组
   const pages = [];
@@ -258,12 +261,16 @@ onMounted(() => {
   
   const urlBid = route.query.bid;
   const urlPage = route.query.p;
+  const urlExtr = route.query.extr;
   
   if (urlBid) {
     bid.value = parseInt(urlBid);
   }
   if (urlPage) {
     page.value = parseInt(urlPage);
+  }
+  if (urlExtr !== undefined) {
+    extr.value = parseInt(urlExtr);
   }
   
   loadBoards();
@@ -274,17 +281,52 @@ onMounted(() => {
 watch(() => route.query, (newQuery) => {
   const newBid = newQuery.bid;
   const newPage = newQuery.p;
-  
+  const newExtr = newQuery.extr;
+
+  const oldBid = bid.value;
+  const oldPage = page.value;
+  const oldExtr = extr.value;
+
   if (newBid) {
     bid.value = parseInt(newBid);
   }
   if (newPage) {
     page.value = parseInt(newPage);
   }
+  if (newExtr !== undefined) {
+    extr.value = parseInt(newExtr);
+  } else {
+    extr.value = 0;
+  }
   
+  if (oldBid !== bid.value) {
+    loadBoardInfo();
+  }
+
   loadThreads();
   calculatePages();
 }, { immediate: false });
+
+// 切换显示精华帖
+const toggleShowExtr = (event) => {
+  const newExtr = extr.value === 1 ? 0 : 1;
+  if (event) {
+    event.preventDefault();
+    if (event.ctrlKey || event.metaKey || event.button === 1) {
+      if (newExtr === 1) {
+        window.open(`?bid=${bid.value}&p=${page.value}&extr=${newExtr}`, '_blank');
+      } else {
+        window.open(`?bid=${bid.value}&p=${page.value}`, '_blank');
+      }
+      return;
+    }
+  }
+  if (extr.value === 1) {
+    router.push({ query: { bid: bid.value, p: page.value } });
+  } else {
+    router.push({ query: { bid: bid.value, p: page.value, extr: 1 } });
+  }
+};
 </script>
 
 <template>
@@ -292,7 +334,7 @@ watch(() => route.query, (newQuery) => {
     <!-- 页面头部 -->
     <div class="header">
       <br>
-      <h2>{{ boardInfo?.bbstitle}}</h2>
+      <h2>{{ boardInfo?.bbstitle}}{{ extr === 1 ? '（精品区）' : '' }}</h2>
       <span>
         <span>版主：</span>
         <a v-if="boardInfo?.m1" class="author" href="#" target="_blank">{{ boardInfo.m1 }}</a>
@@ -317,11 +359,11 @@ watch(() => route.query, (newQuery) => {
       <span style="float:left;margin-left:20px;position:relative;"> 
         <a href="#" @mouseenter="showMenuFunc(true)">CAPUBBS</a>
         <span>&nbsp;&gt;&nbsp;</span>
-        <a href="#">{{ boardInfo?.bbstitle }}</a>
+        <a :href="`?bid=${bid}&p=1`">{{ boardInfo?.bbstitle }}{{ extr === 1 ? '（精品区）' : '' }}</a>
         <span>&nbsp;&gt;&nbsp;</span>
         <span>第{{ page }}页</span>
         <span>&nbsp;</span>
-        <a href="#" style="margin-left:50px">查看精品区</a>
+        <a :href="extr === 1 ? `?bid=${bid}&p=${page}` : `?bid=${bid}&p=${page}&extr=1`" @click="toggleShowExtr" style="margin-left:50px">{{ extr === 1 ? '查看全部' : '查看精品区' }}</a>
         <div 
           class="popover" 
           :style="popoverStyle" 
@@ -368,7 +410,7 @@ watch(() => route.query, (newQuery) => {
             </form>
           </td>
           <td style="text-align:right;line-height:22px">
-            本版面主题数：<span style="color:red">{{ boardInfo?.topics || 0 }}</span> 
+            {{ extr === 1 ? '本版面精品数' : '本版面主题数' }}：<span style="color:red">{{ extr === 1 ? (boardInfo?.extr || 0) : (boardInfo?.topics || 0) }}</span> 
             今日新主题：<span style="color:red">{{ boardInfo?.todaynewthread || 0 }}</span> 
             今日新帖：<span style="color:red">{{ boardInfo?.todaynewpost || 0 }}</span><br>
             <a :href="`../sign/?view=${todayDate}`" target="_blank">今日签到</a>：
