@@ -576,7 +576,7 @@ const toggleShowExtr = (event) => {
   </div>
 </template>
 
-<style>
+<style scoped>
 /* 只保留必要的加载和错误样式，其他使用外部CSS */
 .loading, .error {
   text-align: center;

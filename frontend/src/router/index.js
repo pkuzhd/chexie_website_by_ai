@@ -63,9 +63,28 @@ const routes = [
     }
   },
   {
+    path: '/bbs/content/',
+    name: 'BBSContent',
+    components: {
+      default: BBSContent,
+      // navbar: Navbar
+    },
+    meta: {
+      requiresAuth: false // 帖子内容页面不需要登录即可访问
+    }
+  },
+  {
     path: '/login',
     name: 'Login',
     component: Login,
+    meta: {
+      requiresAuth: false // 不需要登录即可访问
+    }
+  },
+  {
+    path: '/register',
+    name: 'Register',
+    component: Register,
     meta: {
       requiresAuth: false // 不需要登录即可访问
     }
