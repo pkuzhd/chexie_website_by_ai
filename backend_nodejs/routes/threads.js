@@ -8,6 +8,7 @@ const router = express.Router();
 // 1. 通过查询参数获取主题帖信息：
 //    - GET /api/threads?bid=1&tid=2 获取单个主题帖
 //    - GET /api/threads?bid=1&p=1 获取分页主题帖列表（p_size默认为10）
+//    - GET /api/threads?bid=1&p=1&extr=1 获取指定精华级别的帖子
 //    支持显式key的查询参数格式
 router.get('/', requireAuthForBid1, async (req, res) => {
   try {
@@ -48,7 +49,12 @@ router.get('/', requireAuthForBid1, async (req, res) => {
       const page = parseInt(p) || 1;
       const pageSize = parseInt(p_size) || 10;
       const start = (page - 1) * pageSize;
-      const extr = 0;
+      let extr = req.query.extr !== undefined ? parseInt(req.query.extr) : 0;
+      
+      // 如果extr非法，设置为默认值0
+      if (isNaN(extr)) {
+        extr = 0;
+      }
       
       // 使用Sequelize ORM查询
       const threads = await Threads.findAll({

@@ -32,12 +32,18 @@
 | tid | Number | 否 | 主题帖ID，提供此参数时返回单个主题帖信息 |
 | p | Number | 否 | 页码，默认值为1 |
 | p_size | Number | 否 | 每页大小，默认值为10 |
+| extr | Number | 否 | 精华帖级别，默认值为0。0表示普通帖子，大于0表示精华帖 |
 
 #### 请求示例
 
 ##### 获取分页主题帖列表
 ```bash
 curl -X GET http://localhost:3000/api/threads?bid=1&p=1&p_size=10
+```
+
+##### 获取分页主题帖列表（指定extr参数）
+```bash
+curl -X GET http://localhost:3000/api/threads?bid=1&p=1&extr=1
 ```
 
 ##### 获取单个主题帖信息
