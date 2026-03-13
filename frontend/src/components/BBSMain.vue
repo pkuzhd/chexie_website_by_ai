@@ -22,7 +22,9 @@ const boards = ref([]);
 const isLoading = ref(true);
 const error = ref(null);
 const showMenu = ref(false);
-const popoverStyle = ref({});
+const popoverStyle = computed(() => ({
+  display: showMenu.value ? 'block' : 'none'
+}));
 const searchKeyword = ref('');
 const searchType = ref('thread');
 const searchRange = ref('1');
@@ -67,8 +69,6 @@ const showMoreSearch = () => {
 // 显示/隐藏菜单
 const showMenuFunc = (show) => {
   showMenu.value = show;
-  // 使用 Vue 响应式方法设置样式
-  popoverStyle.value = show ? { display: 'block' } : { display: 'none' };
 };
 
 // 处理链接点击
