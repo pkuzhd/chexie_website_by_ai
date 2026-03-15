@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed, onBeforeUnmount, watch } from 'vue';
+import { ref, onMounted, computed, onBeforeUnmount, watch, inject } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 import config from '../config';
@@ -19,6 +19,8 @@ const extr = ref(0);
 const boardInfo = ref(null);
 const threads = ref([]);
 const boards = ref([]);
+const currentUser = inject('currentUser');
+
 const isLoading = ref(true);
 const error = ref(null);
 const showMenu = ref(false);
@@ -76,6 +78,79 @@ const handleLink = (event, url) => {
   if (event && (event.ctrlKey || event.metaKey || event.button === 1)) {
     event.preventDefault();
     window.open(url, '_blank');
+  }
+};
+
+// 从cookie中获取token
+const getCookie = (name) => {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
+};
+
+// 获取当前用户信息
+const getCurrentUser = async () => {
+  try {
+    const token = getCookie('token');
+    console.log('获取到的token:', token);
+    if (!token) {
+      currentUser.value = null;
+      return;
+    }
+    
+    const response = await axios.get(`${API_HOST}/api/auth_legacy/current`, {
+      params: { token },
+      withCredentials: true
+    });
+    console.log('获取当前用户信息成功:', response.data);
+    
+    if (response.data.username) {
+      currentUser.value = {
+        username: response.data.username,
+        rights: response.data.rights || 0
+      };
+    } else {
+      currentUser.value = null;
+    }
+  } catch (err) {
+    console.error('获取当前用户信息失败:', err);
+    currentUser.value = null;
+  }
+};
+
+// 处理注销
+const handleLogout = async () => {
+  try {
+    const token = getCookie('token');
+    if (!token) {
+      currentUser.value = null;
+      return;
+    }
+    
+    // 调用后端注销接口
+    const response = await axios.post(`${API_HOST}/api/auth_legacy/logout`, {
+      token
+    }, {
+      withCredentials: true
+    });
+    
+    console.log('注销成功:', response.data);
+    
+    // 清理cookie中的token
+    document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    localStorage.removeItem('token');
+    
+    // 更新前端状态
+    currentUser.value = null;
+  } catch (err) {
+    console.error('注销失败:', err);
+    // 即使失败也清理前端状态
+    document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    localStorage.removeItem('token');
+    
+    // 更新前端状态
+    currentUser.value = null;
   }
 };
 
@@ -272,6 +347,7 @@ onMounted(() => {
   if (urlExtr !== undefined) {
     extr.value = parseInt(urlExtr);
   }
+  getCurrentUser();
   
   loadBoards();
   loadThreads();
@@ -345,8 +421,21 @@ const toggleShowExtr = (event) => {
       <br>
       <span>主题数：{{ boardInfo?.newpost || 0 }}/{{ boardInfo?.topics || 0 }} 新回复：{{ boardInfo?.newreply || 0 }}</span>
       <div class="user">
-        <span class="guest">
-          欢迎您，游客！<a href="#">登录</a> 或者 <a href="#">注册</a>
+        <div v-if="currentUser">
+          <img src="https://chexie.net/bbsimg/icons/nest.jpeg" class="usericon">
+          <div v-if="currentUser" class="userinfo">
+            <a href="../user?name={{ currentUser }}" target="_blank">{{ currentUser.username }}</a>
+            <span>&nbsp;等级：3&nbsp;</span>
+            <a href="../home" target="_blank">个人中心</a>
+            <br>
+            <a href="javascript:void(0)" @click="handleLogout">注销</a>
+          </div>
+        </div>
+        <span v-else class="guest">
+          欢迎您，游客！<router-link 
+          :to="`/bbs/login?from=${encodeURIComponent(route.fullPath)}`"
+          @click="handleLink($event, `/bbs/login?from=${encodeURIComponent(route.fullPath)}`)"
+        >登录</router-link> 或者 <a href="/bbs/register">注册</a>
         </span>
       </div>
     </div>
@@ -558,14 +647,14 @@ const toggleShowExtr = (event) => {
       <span class="editip">
         <span>您需要&nbsp;</span>
         <router-link 
-          :to="`/login?from=${encodeURIComponent($route.fullPath)}`"
-          @click="handleLink($event, `/login?from=${encodeURIComponent($route.fullPath)}`)"
+          :to="`/bbs/login?from=${encodeURIComponent(route.fullPath)}`"
+          @click="handleLink($event, `/bbs/login?from=${encodeURIComponent(route.fullPath)}`)"
         >登录</router-link>
         <span>&nbsp;</span>
         <span>后才能发表主题；没有账号？&nbsp;</span>
         <router-link 
-          to="/register"
-          @click="handleLink($event, '/register')"
+          to="/bbs/register"
+          @click="handleLink($event, '/bbs/register')"
         >现在注册</router-link>
         <span>&nbsp;</span>
       </span>

@@ -60,8 +60,11 @@ const handleLogin = async () => {
     const response = await authService.login(form.username, form.password);
     
     // 保存token和用户信息到本地存储
-    localStorage.setItem('token', response.data.token);
-    localStorage.setItem('user', JSON.stringify(response.data.user));
+    // localStorage.setItem('token', response.data.token);
+    localStorage.setItem('currentUser', JSON.stringify(response.data.user));
+
+    // 将 token 写入 cookie，确保 getCookie 能正确获取
+    document.cookie = `token=${response.data.token}; path=/; secure; samesite=strict`;
     
     // 登录成功后跳转到原页面或首页
     const redirectPath = router.currentRoute.value.query.redirect || '/';

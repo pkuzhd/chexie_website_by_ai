@@ -74,7 +74,7 @@ const routes = [
     }
   },
   {
-    path: '/login',
+    path: '/bbs/login',
     name: 'Login',
     component: Login,
     meta: {
@@ -82,7 +82,7 @@ const routes = [
     }
   },
   {
-    path: '/register',
+    path: '/bbs/register',
     name: 'Register',
     component: Register,
     meta: {
@@ -96,15 +96,30 @@ const router = createRouter({
   routes
 });
 
+const getCookie = (name) => {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
+};
+
 // 路由守卫：检查是否需要登录
 router.beforeEach((to, from, next) => {
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
   const isAuthenticated = localStorage.getItem('token') !== null;
   
-  if (requiresAuth && !isAuthenticated) {
+  const legacyToken = getCookie('token');
+  const isLegacyAuthenticated = legacyToken !== null;
+
+  console.log('legacyToken:', legacyToken);
+  console.log('token:', localStorage.getItem('token'));
+  console.log('requiresAuth:', requiresAuth);
+  console.log('isAuthenticated:', isAuthenticated);
+  
+  if (requiresAuth && !isAuthenticated && !isLegacyAuthenticated) {
     // 需要登录但未登录，跳转到登录页并携带原路径作为redirect参数
-    next({ path: '/login', query: { redirect: to.fullPath } });
-  } else if (!requiresAuth && isAuthenticated && to.path === '/login') {
+    next({ path: '/bbs/login', query: { redirect: to.fullPath } });
+  } else if (!requiresAuth && (isAuthenticated || isLegacyAuthenticated) && to.path === '/bbs/login') {
     // 已登录且访问登录页，检查是否有redirect参数
     const redirectPath = to.query.redirect || '/';
     next(redirectPath);
