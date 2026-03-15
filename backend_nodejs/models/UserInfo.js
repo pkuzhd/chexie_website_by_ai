@@ -1,4 +1,4 @@
-const { DataTypes } = require('sequelize');
+const { DataTypes, Op } = require('sequelize');
 const sequelize = require('../config/db');
 
 // 定义UserInfo模型
@@ -208,4 +208,6 @@ const UserInfo = sequelize.define('userinfo', {
   ]
 });
 
+// 导出模型和操作符
 module.exports = UserInfo;
+module.exports.Op = Op;

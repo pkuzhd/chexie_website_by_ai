@@ -8,6 +8,7 @@ const sequelize = require('./config/db');
 
 // 导入路由
 const authRoutes = require('./routes/auth');
+const authLegacyRoutes = require('./routes/auth_legacy');
 const boardinfoRoutes = require('./routes/boardinfo');
 const userinfoRoutes = require('./routes/userinfo');
 const threadsRoutes = require('./routes/threads');
@@ -28,6 +29,9 @@ app.get('/test', (req, res) => {
 
 // 使用认证路由
 app.use('/api/auth', authRoutes);
+
+// 使用传统认证路由（兼容PHP风格）
+app.use('/api/auth_legacy', authLegacyRoutes);
 
 // 使用板块信息路由
 app.use('/api/boardinfo', boardinfoRoutes);
