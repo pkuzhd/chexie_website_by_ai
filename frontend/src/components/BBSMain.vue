@@ -208,23 +208,40 @@ const loadThreads = async () => {
 };
 
 // 跳转到板块（带防抖机制）
-const goToBoard = (targetBid) => {
+const goToBoard = async (targetBid) => {
   if (isClickDisabled.value) {
     return;
   }
   
   isClickDisabled.value = true;
-  
   showMenu.value = false;
-  router.push({ query: { bid: targetBid, p: 1 } });
   
-  setTimeout(() => {
-    isClickDisabled.value = false;
-  }, 500);
+  try {
+    // 先更新本地状态
+    const oldBid = bid.value;
+    bid.value = targetBid;
+    page.value = 1;
+    
+    // 加载数据
+    if (oldBid !== targetBid) {
+      await loadBoardInfo();
+    }
+    await loadThreads();
+    calculatePages();
+    
+    // 数据加载完成后更新URL
+    router.push({ query: { bid: targetBid, p: 1 } });
+  } catch (error) {
+    console.error('跳转到板块失败:', error);
+  } finally {
+    setTimeout(() => {
+      isClickDisabled.value = false;
+    }, 500);
+  }
 };
 
 // 跳转到页面（带防抖机制）
-const goToPage = (targetPage, event) => {
+const goToPage = async (targetPage, event) => {
   if (event) {
     event.preventDefault();
     if (event.ctrlKey || event.metaKey || event.button === 1) {
@@ -239,15 +256,27 @@ const goToPage = (targetPage, event) => {
   
   isClickDisabled.value = true;
   
-  if (extr.value === 1) {
-    router.push({ query: { bid: bid.value, p: targetPage, extr: 1 } });
-  } else {
-    router.push({ query: { bid: bid.value, p: targetPage } });
+  try {
+    // 先更新本地状态
+    page.value = targetPage;
+    
+    // 加载数据
+    await loadThreads();
+    calculatePages();
+    
+    // 数据加载完成后更新URL
+    if (extr.value === 1) {
+      router.push({ query: { bid: bid.value, p: targetPage, extr: 1 } });
+    } else {
+      router.push({ query: { bid: bid.value, p: targetPage } });
+    }
+  } catch (error) {
+    console.error('跳转到页面失败:', error);
+  } finally {
+    setTimeout(() => {
+      isClickDisabled.value = false;
+    }, 500);
   }
-  
-  setTimeout(() => {
-    isClickDisabled.value = false;
-  }, 500);
 };
 
 // 格式化日期
@@ -378,13 +407,10 @@ watch(() => route.query, (newQuery) => {
   if (oldBid !== bid.value) {
     loadBoardInfo();
   }
-
-  loadThreads();
-  calculatePages();
 }, { immediate: false });
 
 // 切换显示精华帖
-const toggleShowExtr = (event) => {
+const toggleShowExtr = async (event) => {
   const newExtr = extr.value === 1 ? 0 : 1;
   if (event) {
     event.preventDefault();
@@ -397,10 +423,33 @@ const toggleShowExtr = (event) => {
       return;
     }
   }
-  if (extr.value === 1) {
-    router.push({ query: { bid: bid.value, p: page.value } });
-  } else {
-    router.push({ query: { bid: bid.value, p: page.value, extr: 1 } });
+  
+  if (isClickDisabled.value) {
+    return;
+  }
+  
+  isClickDisabled.value = true;
+  
+  try {
+    // 先更新本地状态
+    extr.value = newExtr;
+    
+    // 加载数据
+    await loadThreads();
+    calculatePages();
+    
+    // 数据加载完成后更新URL
+    if (newExtr === 1) {
+      router.push({ query: { bid: bid.value, p: page.value, extr: 1 } });
+    } else {
+      router.push({ query: { bid: bid.value, p: page.value } });
+    }
+  } catch (error) {
+    console.error('切换精华帖显示失败:', error);
+  } finally {
+    setTimeout(() => {
+      isClickDisabled.value = false;
+    }, 500);
   }
 };
 </script>
