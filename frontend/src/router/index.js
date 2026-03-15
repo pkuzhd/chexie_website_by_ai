@@ -6,6 +6,9 @@ import Navbar from '../components/Navbar.vue';
 import BBSMain from '../components/BBSMain.vue';
 import BBSContent from '../components/BBSContent.vue';
 import config from '../config';
+import { useCookie } from '../composables/useCookie';
+
+const { getCookie } = useCookie();
 
 
 // 导入其他组件（示例）
@@ -97,13 +100,6 @@ router.addRoute({
   path: '/',
   redirect: '/bbs/main'
 });
-
-const getCookie = (name) => {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop().split(';').shift();
-  return null;
-};
 
 // 验证token是否有效的函数
 const verifyToken = async () => {

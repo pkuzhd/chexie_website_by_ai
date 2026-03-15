@@ -3,11 +3,13 @@ import { ref, onMounted, computed, onBeforeUnmount, watch, inject } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 import config from '../config';
+import { useCookie } from '../composables/useCookie';
 import '../assets/css/general.css';
 import '../assets/css/style.css';
 
 const route = useRoute();
 const router = useRouter();
+const { getCookie } = useCookie();
 
 // API配置
 const API_HOST = config.API_HOST;
@@ -79,14 +81,6 @@ const handleLink = (event, url) => {
     event.preventDefault();
     window.open(url, '_blank');
   }
-};
-
-// 从cookie中获取token
-const getCookie = (name) => {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop().split(';').shift();
-  return null;
 };
 
 // 获取当前用户信息
