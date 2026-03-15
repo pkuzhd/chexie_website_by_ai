@@ -203,7 +203,7 @@ router.post('/logout', async (req, res) => {
 // 3. 获取用户信息接口
 router.get('/current', async (req, res) => {
   try {
-    const { token } = req.query;
+    const token = req.cookies.token;
     
     if (!token) {
       return res.json({

@@ -2,6 +2,7 @@ const express = require('express');
 const compression = require('compression');
 require('dotenv').config();
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 
 // 导入数据库连接
 const sequelize = require('./config/db');
@@ -20,7 +21,7 @@ const app = express();
 // 配置中间件
 app.use(express.json());
 app.use(compression());
-app.use(cors());
+app.use(cookieParser());
 
 // 定义/test接口
 app.get('/test', (req, res) => {

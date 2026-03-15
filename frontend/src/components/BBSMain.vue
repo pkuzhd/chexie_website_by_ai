@@ -100,7 +100,6 @@ const getCurrentUser = async () => {
     }
     
     const response = await axios.get(`${API_HOST}/api/auth_legacy/current`, {
-      params: { token },
       withCredentials: true
     });
     console.log('获取当前用户信息成功:', response.data);
@@ -473,9 +472,9 @@ const toggleShowExtr = async (event) => {
         <div v-if="currentUser">
           <img src="https://chexie.net/bbsimg/icons/nest.jpeg" class="usericon">
           <div v-if="currentUser" class="userinfo">
-            <a href="../user?name={{ currentUser }}" target="_blank">{{ currentUser.username }}</a>
+            <a :href="'/bbs/user?name=' + currentUser.username" target="_blank">{{ currentUser.username }}</a>
             <span>&nbsp;等级：3&nbsp;</span>
-            <a href="../home" target="_blank">个人中心</a>
+            <a href="/bbs/home" target="_blank">个人中心</a>
             <br>
             <a href="javascript:void(0)" @click="handleLogout">注销</a>
           </div>
