@@ -1,11 +1,12 @@
 const UserInfo = require('./models/UserInfo');
+const crypto = require('crypto');
 
 async function insertTestUser() {
   try {
     // 创建一个包含逗号的用户名
     const user = await UserInfo.create({
       username: 'user,name',
-      password: 'test123',
+      password: crypto.createHash('md5').update('test123').digest('hex'),
       sex: '男',
       score: 0
     });
