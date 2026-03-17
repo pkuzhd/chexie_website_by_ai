@@ -44,6 +44,7 @@ const iconUrl = ref('/images/icon.png');
 const lockIconUrl = ref('/images/lock.png');
 const extrIconUrl = ref('/images/extr.png');
 const topIconUrl = ref('/images/top.png');
+const waitingGifUrl = ref('/images/waiting.gif');
 
 // 计算今日日期
 const todayDate = computed(() => {
@@ -101,7 +102,11 @@ const getCurrentUser = async () => {
     if (response.data.username) {
       currentUser.value = {
         username: response.data.username,
-        rights: response.data.rights || 0
+        rights: response.data.rights || 0,
+        icon: response.data.icon,
+        score: response.data.score || 0,
+        star: response.data.star || 0,
+        newmsg: response.data.newmsg || 0,
       };
     } else {
       currentUser.value = null;
@@ -452,7 +457,7 @@ const toggleShowExtr = async (event) => {
     <!-- 页面头部 -->
     <div class="header">
       <br>
-      <h2>{{ boardInfo?.bbstitle}}{{ extr === 1 ? '（精品区）' : '' }}</h2>
+      <h2>{{ boardInfo?.bbstitle }}{{ extr === 1 ? '（精品区）' : '' }}</h2>
       <span>
         <span>版主：</span>
         <a v-if="boardInfo?.m1" class="author" href="#" target="_blank">{{ boardInfo.m1 }}</a>
@@ -464,27 +469,28 @@ const toggleShowExtr = async (event) => {
       <span>主题数：{{ boardInfo?.newpost || 0 }}/{{ boardInfo?.topics || 0 }} 新回复：{{ boardInfo?.newreply || 0 }}</span>
       <div class="user">
         <div v-if="currentUser">
-          <img src="https://chexie.net/bbsimg/icons/nest.jpeg" class="usericon">
+          <img :src="'https://chexie.net' + currentUser.icon" class="usericon">
           <div v-if="currentUser" class="userinfo">
             <a :href="'/bbs/user?name=' + currentUser.username" target="_blank">{{ currentUser.username }}</a>
-            <span>&nbsp;等级：3&nbsp;</span>
-            <a href="/bbs/home" target="_blank">个人中心</a>
+            <span>&nbsp;等级：{{ currentUser.star || 0 }}&nbsp;</span>
+            <a v-if="currentUser.newmsg==0" href="/bbs/home" target="_blank">个人中心</a>
+            <span v-else><br><a href='/bbs/home?pos=message' target='_blank'>您有 {{ currentUser.newmsg }} 条未读消息</a></span>
             <br>
             <a href="javascript:void(0)" @click="handleLogout">注销</a>
           </div>
         </div>
         <span v-else class="guest">
-          欢迎您，游客！<router-link 
-          :to="`/bbs/login?from=${encodeURIComponent(route.fullPath)}`"
+          欢迎您，游客！<a 
+          :href="`/bbs/login?from=${encodeURIComponent(route.fullPath)}`"
           @click="handleLink($event, `/bbs/login?from=${encodeURIComponent(route.fullPath)}`)"
-        >登录</router-link> 或者 <a href="/bbs/register">注册</a>
+        >登录</a> 或者 <a href="/bbs/register">注册</a>
         </span>
       </div>
     </div>
 
     <!-- 导航栏 -->
     <div class="navigation">
-      <div class="back" @click="router.push('/')">
+      <div class="back" @click="router.push('/bbs/index')">
         <span style="margin-left:32px;"><b>返回</b></span>
       </div>
       <span style="float:left;margin-left:20px;position:relative;"> 
@@ -685,7 +691,27 @@ const toggleShowExtr = async (event) => {
     </div>
 
     <!-- 编辑区域 -->
-    <div class="editip" id="editip">
+    <div v-if="currentUser" class="editor" id="editor">
+			<input type="text" class="title" placeholder="帖子标题" id="raw_title">
+			<div id="edi_bar"></div>
+			<div id="edi_content" onfocus="editorFocus();" onblur="editorBlur();"></div>
+			<br>
+			<progress max="100" value="20" id="progress"></progress>
+      <div id="edi_attach" onclick="attach();">添加附件</div>
+			<input type="file" id="file" style="display:none;" onchange="fileselected();">
+			<span>选择签名档：</span>
+			<input type="radio" name="sign" value="0">不使用
+			<input type="radio" name="sign" value="1" checked>1
+			<input type="radio" name="sign" value="2">2
+			<input type="radio" name="sign" value="3">3
+			<div id="edi_submit" onclick="doreply();">发表帖子</div>
+			<br><br><br>
+			<span id="attachtip" style="display:none;">本帖包含的附件：</span>
+			<!-- <div class="attachs" id="attachs"></div> -->
+			<span id="unusedattachtip" style="display:none;">您曾上传但未使用的附件：（可直接链接到本贴）<img :src="waitingGifUrl" width="15px" id="waitinggif" style="visibility:hidden;"></span>
+			<!-- <div class="attachs" id="unusedattachs"></div> -->
+		</div>
+    <div v-if="!currentUser" class="editip" id="editip">
       <span class="editip">
         <span>您需要&nbsp;</span>
         <router-link 

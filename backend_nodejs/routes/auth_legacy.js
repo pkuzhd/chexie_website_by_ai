@@ -208,7 +208,11 @@ router.get('/current', async (req, res) => {
     if (!token) {
       return res.json({
         username: '',
-        rights: 0
+        rights: 0,
+        icon: '',
+        score: 0,
+        star: 0,
+        newmsg: 0
       });
     }
     
@@ -221,27 +225,39 @@ router.get('/current', async (req, res) => {
           [Op.gt]: nowtime - VALID_TIME
         }
       },
-      attributes: ['username', 'rights']
+      attributes: ['username', 'rights', 'icon', 'score', 'star', 'newmsg']
     });
     
     if (!user) {
       return res.json({
         username: '',
-        rights: 0
+        rights: 0,
+        icon: '',
+        score: 0,
+        star: 0,
+        newmsg: 0
       });
     }
     
     // 返回用户信息
     res.json({
       username: user.username,
-      rights: user.rights || 0
+      rights: user.rights || 0,
+      icon: user.icon || '',
+      score: user.score || 0,
+      star: user.star || 0,
+      newmsg: user.newmsg || 0
     });
     
   } catch (error) {
     console.error('获取用户信息失败:', error);
     res.json({
       username: '',
-      rights: 0
+      rights: 0,
+      icon: '',
+      score: 0,
+      star: 0,
+      newmsg: 0
     });
   }
 });
