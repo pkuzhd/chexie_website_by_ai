@@ -1,9 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db');
 
-// 定义BoardInfo模型
 const BoardInfo = sequelize.define('boardinfo', {
-  // 字段名对应数据库表中的字段
   bid: {
     type: DataTypes.TINYINT,
     allowNull: false,
@@ -52,15 +50,8 @@ const BoardInfo = sequelize.define('boardinfo', {
     field: 'need'
   }
 }, {
-  // 模型配置
-  tableName: 'boardinfo', // 指定数据库表名
-  timestamps: false, // 禁用默认的timestamps字段
-  indexes: [
-    {
-      name: 'bid',
-      fields: ['bid']
-    }
-  ]
+  tableName: 'boardinfo',
+  timestamps: false
 });
 
 module.exports = BoardInfo;

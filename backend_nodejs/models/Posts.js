@@ -1,10 +1,9 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db');
 
-// 定义Posts模型
 const Posts = sequelize.define('Posts', {
   bid: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.TINYINT,
     allowNull: false,
   },
   tid: {
@@ -16,13 +15,13 @@ const Posts = sequelize.define('Posts', {
     allowNull: false,
   },
   fid: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.INTEGER.UNSIGNED,
     allowNull: false,
     primaryKey: true,
     autoIncrement: true,
   },
   title: {
-    type: DataTypes.STRING(255),
+    type: DataTypes.TEXT,
     allowNull: true,
   },
   author: {
@@ -30,31 +29,31 @@ const Posts = sequelize.define('Posts', {
     allowNull: true,
   },
   text: {
-    type: DataTypes.TEXT,
+    type: DataTypes.TEXT('long'),
     allowNull: true,
   },
   ishtml: {
-    type: DataTypes.STRING(10),
-    allowNull: false,
-  },
-  attachs: {
     type: DataTypes.TEXT,
     allowNull: false,
   },
+  attachs: {
+    type: DataTypes.TEXT('medium'),
+    allowNull: false,
+  },
   replytime: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.BIGINT,
     allowNull: true,
   },
   updatetime: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.BIGINT,
     allowNull: true,
   },
   sig: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.TINYINT,
     allowNull: true,
   },
   type: {
-    type: DataTypes.STRING(10),
+    type: DataTypes.TEXT,
     allowNull: true,
   },
   ip: {
@@ -68,7 +67,7 @@ const Posts = sequelize.define('Posts', {
   },
 }, {
   tableName: 'posts',
-  timestamps: false, // 不使用Sequelize默认的时间戳字段
+  timestamps: false,
 });
 
 module.exports = Posts;

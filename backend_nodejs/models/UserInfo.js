@@ -1,9 +1,14 @@
 const { DataTypes, Op } = require('sequelize');
 const sequelize = require('../config/db');
 
-// 定义UserInfo模型
 const UserInfo = sequelize.define('userinfo', {
-  // 字段名对应数据库表中的字段
+  userid: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    primaryKey: true,
+    autoIncrement: true,
+    field: 'userid'
+  },
   username: {
     type: DataTypes.STRING(30),
     allowNull: false,
@@ -184,30 +189,11 @@ const UserInfo = sequelize.define('userinfo', {
     type: DataTypes.TEXT,
     allowNull: true,
     field: 'other6'
-  },
-  userid: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    primaryKey: true,
-    autoIncrement: true,
-    field: 'userid'
   }
 }, {
-  // 模型配置
-  tableName: 'userinfo', // 指定数据库表名
-  timestamps: false, // 禁用默认的timestamps字段
-  indexes: [
-    {
-      name: 'username',
-      fields: ['username']
-    },
-    {
-      name: 'token',
-      fields: ['token']
-    }
-  ]
+  tableName: 'userinfo',
+  timestamps: false
 });
 
-// 导出模型和操作符
 module.exports = UserInfo;
 module.exports.Op = Op;

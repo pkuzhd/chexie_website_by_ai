@@ -3,64 +3,58 @@ const sequelize = require('../config/db');
 
 const Threads = sequelize.define('Threads', {
   bid: {
-    type: DataTypes.INTEGER,
-    allowNull: false
+    type: DataTypes.TINYINT,
+    allowNull: false,
+    primaryKey: true
   },
   tid: {
     type: DataTypes.INTEGER,
-    primaryKey: true,
-    autoIncrement: true,
-    allowNull: false
+    allowNull: false,
+    primaryKey: true
   },
   title: {
-    type: DataTypes.STRING(255),
-    allowNull: false
+    type: DataTypes.TEXT,
+    allowNull: true
   },
   author: {
-    type: DataTypes.STRING(50),
-    allowNull: false
+    type: DataTypes.STRING(30),
+    allowNull: true
   },
   replyer: {
-    type: DataTypes.STRING(50),
-    allowNull: false
+    type: DataTypes.STRING(30),
+    allowNull: true
   },
   click: {
     type: DataTypes.INTEGER,
-    allowNull: false, 
-    defaultValue: 0
+    allowNull: true
   },
   reply: {
     type: DataTypes.INTEGER,
-    allowNull: false,
-    defaultValue: 0
+    allowNull: true
   },
   guesture: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    defaultValue: 0
+    type: DataTypes.TINYINT,
+    allowNull: true
   },
   extr: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    defaultValue: 0
+    type: DataTypes.TINYINT,
+    allowNull: true
   },
   top: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    defaultValue: 0
+    type: DataTypes.TINYINT,
+    allowNull: true
   },
   locked: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    defaultValue: 0
+    type: DataTypes.TINYINT,
+    allowNull: true
   },
   timestamp: {
-    type: DataTypes.INTEGER,
-    allowNull: false
+    type: DataTypes.BIGINT,
+    allowNull: true
   },
   postdate: {
-    type: DataTypes.DATE,
-    allowNull: false
+    type: DataTypes.STRING(30),
+    allowNull: true
   }
 }, {
   tableName: 'threads',
