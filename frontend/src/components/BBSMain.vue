@@ -18,6 +18,7 @@ const API_HOST = config.API_HOST;
 const bid = ref(2);
 const page = ref(1);
 const extr = ref(0);
+const sortBy = ref('default');
 const boardInfo = ref(null);
 const threads = ref([]);
 const boards = ref([]);
@@ -189,7 +190,8 @@ const loadThreads = async () => {
         bid: bid.value,
         p: page.value,
         extr: extr.value,
-        p_size: 25
+        p_size: 25,
+        sort_by: sortBy.value
       }
     });
     
@@ -228,7 +230,11 @@ const goToBoard = async (targetBid) => {
     calculatePages();
     
     // 数据加载完成后更新URL
-    router.push({ query: { bid: targetBid, p: 1 } });
+    const query = { bid: targetBid, p: 1 };
+    if (sortBy.value !== 'default') {
+      query.sort_by = sortBy.value;
+    }
+    router.push({ query });
   } catch (error) {
     console.error('跳转到板块失败:', error);
   } finally {
@@ -263,11 +269,14 @@ const goToPage = async (targetPage, event) => {
     calculatePages();
     
     // 数据加载完成后更新URL
+    const query = { bid: bid.value, p: targetPage };
     if (extr.value === 1) {
-      router.push({ query: { bid: bid.value, p: targetPage, extr: 1 } });
-    } else {
-      router.push({ query: { bid: bid.value, p: targetPage } });
+      query.extr = 1;
     }
+    if (sortBy.value !== 'default') {
+      query.sort_by = sortBy.value;
+    }
+    router.push({ query });
   } catch (error) {
     console.error('跳转到页面失败:', error);
   } finally {
@@ -364,6 +373,7 @@ onMounted(() => {
   const urlBid = route.query.bid;
   const urlPage = route.query.p;
   const urlExtr = route.query.extr;
+  const urlSortBy = route.query.sort_by;
   
   if (urlBid) {
     bid.value = parseInt(urlBid);
@@ -373,6 +383,9 @@ onMounted(() => {
   }
   if (urlExtr !== undefined) {
     extr.value = parseInt(urlExtr);
+  }
+  if (urlSortBy) {
+    sortBy.value = urlSortBy;
   }
   getCurrentUser();
   
@@ -385,10 +398,12 @@ watch(() => route.query, (newQuery) => {
   const newBid = newQuery.bid;
   const newPage = newQuery.p;
   const newExtr = newQuery.extr;
+  const newSortBy = newQuery.sort_by;
 
   const oldBid = bid.value;
   const oldPage = page.value;
   const oldExtr = extr.value;
+  const oldSortBy = sortBy.value;
 
   if (newBid) {
     bid.value = parseInt(newBid);
@@ -401,11 +416,40 @@ watch(() => route.query, (newQuery) => {
   } else {
     extr.value = 0;
   }
+  if (newSortBy) {
+    sortBy.value = newSortBy;
+  } else {
+    sortBy.value = 'default';
+  }
   
   if (oldBid !== bid.value) {
     loadBoardInfo();
   }
+  if (oldSortBy !== sortBy.value || oldExtr !== extr.value || oldPage !== page.value || oldBid !== bid.value) {
+    loadThreads();
+  }
 }, { immediate: false });
+
+// 处理排序方式变化
+const handleSortChange = async () => {
+  try {
+    // 加载数据
+    await loadThreads();
+    calculatePages();
+    
+    // 数据加载完成后更新URL
+    const query = { bid: bid.value, p: page.value };
+    if (extr.value === 1) {
+      query.extr = 1;
+    }
+    if (sortBy.value !== 'default') {
+      query.sort_by = sortBy.value;
+    }
+    router.push({ query });
+  } catch (error) {
+    console.error('切换排序方式失败:', error);
+  }
+};
 
 // 切换显示精华帖
 const toggleShowExtr = async (event) => {
@@ -413,11 +457,14 @@ const toggleShowExtr = async (event) => {
   if (event) {
     event.preventDefault();
     if (event.ctrlKey || event.metaKey || event.button === 1) {
+      let url = `?bid=${bid.value}&p=${page.value}`;
       if (newExtr === 1) {
-        window.open(`?bid=${bid.value}&p=${page.value}&extr=${newExtr}`, '_blank');
-      } else {
-        window.open(`?bid=${bid.value}&p=${page.value}`, '_blank');
+        url += `&extr=${newExtr}`;
       }
+      if (sortBy.value !== 'default') {
+        url += `&sort_by=${sortBy.value}`;
+      }
+      window.open(url, '_blank');
       return;
     }
   }
@@ -437,11 +484,14 @@ const toggleShowExtr = async (event) => {
     calculatePages();
     
     // 数据加载完成后更新URL
+    const query = { bid: bid.value, p: page.value };
     if (newExtr === 1) {
-      router.push({ query: { bid: bid.value, p: page.value, extr: 1 } });
-    } else {
-      router.push({ query: { bid: bid.value, p: page.value } });
+      query.extr = 1;
     }
+    if (sortBy.value !== 'default') {
+      query.sort_by = sortBy.value;
+    }
+    router.push({ query });
   } catch (error) {
     console.error('切换精华帖显示失败:', error);
   } finally {
@@ -501,6 +551,12 @@ const toggleShowExtr = async (event) => {
         <span>第{{ page }}页</span>
         <span>&nbsp;</span>
         <a :href="extr === 1 ? `?bid=${bid}&p=${page}` : `?bid=${bid}&p=${page}&extr=1`" @click="toggleShowExtr" style="margin-left:50px">{{ extr === 1 ? '查看全部' : '查看精品区' }}</a>
+        <span>&nbsp;&nbsp;</span>
+        <select v-model="sortBy" @change="handleSortChange" style="margin-left:10px">
+          <option value="default">按最近回复排序</option>
+          <option value="tid_desc">按发帖由近到远</option>
+          <option value="tid_asc">按发帖由远到近</option>
+        </select>
         <div 
           class="popover" 
           :style="popoverStyle" 
