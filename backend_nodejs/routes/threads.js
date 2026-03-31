@@ -8,7 +8,9 @@ const router = express.Router();
 // 1. 通过查询参数获取主题帖信息：
 //    - GET /api/threads?bid=1&tid=2 获取单个主题帖
 //    - GET /api/threads?bid=1&p=1 获取分页主题帖列表（p_size默认为10）
-//    - GET /api/threads?bid=1&p=1&extr=1 获取指定精华级别的帖子
+//    - GET /api/threads?bid=1&p=1&extr=1 获取指定精华级别的帖子列表（extr默认值为0）
+//    - GET /api/threads?bid=1&p=1&sort_by=tid_asc 按tid从小到大排序
+//    - GET /api/threads?bid=1&p=1&sort_by=tid_desc 按tid从大到小排序（sort_by默认值为default）
 //    支持显式key的查询参数格式
 router.get('/', requireAuthForBid1, async (req, res) => {
   try {
@@ -50,10 +52,27 @@ router.get('/', requireAuthForBid1, async (req, res) => {
       const pageSize = parseInt(p_size) || 10;
       const start = (page - 1) * pageSize;
       let extr = req.query.extr !== undefined ? parseInt(req.query.extr) : 0;
-      
+      const sortBy = req.query.sort_by || 'default';
+    
       // 如果extr非法，设置为默认值0
       if (isNaN(extr)) {
         extr = 0;
+      }
+      
+      // 构建排序逻辑
+      let order;
+      switch (sortBy) {
+        case 'tid_asc':
+          order = [['tid', 'ASC']];
+          break;
+        case 'tid_desc':
+          order = [['tid', 'DESC']];
+          break;
+        default:
+          order = [
+            ['top', 'DESC'],
+            ['timestamp', 'DESC']
+          ];
       }
       
       // 使用Sequelize ORM查询
@@ -64,10 +83,7 @@ router.get('/', requireAuthForBid1, async (req, res) => {
         },
         limit: 25,
         offset: start,
-        order: [
-          ['top', 'DESC'],
-          ['timestamp', 'DESC']
-        ]
+        order: order
       });
       
       // 为每个结果添加global_top字段
