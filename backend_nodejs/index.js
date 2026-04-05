@@ -1,6 +1,6 @@
+require('./config/env');
 const express = require('express');
 const compression = require('compression');
-require('dotenv').config();
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 

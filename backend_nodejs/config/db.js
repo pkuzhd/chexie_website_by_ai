@@ -1,17 +1,17 @@
 const { Sequelize } = require('sequelize');
-require('dotenv').config();
+const env = require('./env');
 
-const isDebug = process.env.DEBUG === 'true' || process.env.DEBUG === '1';
+const isDebug = env.DEBUG;
 
 // 创建数据库连接
 const sequelize = new Sequelize(
-  process.env.DB_NAME, // 数据库名
-  process.env.DB_USER, // 用户名
-  process.env.DB_PASSWORD, // 密码
+  env.DB_NAME, // 数据库名
+  env.DB_USER, // 用户名
+  env.DB_PASSWORD, // 密码
   {
-    host: process.env.DB_HOST,
-    dialect: process.env.DB_DIALECT,
-    port: process.env.DB_PORT,
+    host: env.DB_HOST,
+    dialect: env.DB_DIALECT,
+    port: env.DB_PORT,
     logging: isDebug ? (sql, queryObject) => {
       console.log('\n[SQL]', sql);
       if (queryObject.bind) {

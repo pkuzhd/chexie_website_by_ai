@@ -1,16 +1,16 @@
-require('dotenv').config();
+const env = require('./env');
 
 const corsOptions = {
   origin: (origin, callback) => {
-    const isDebug = process.env.DEBUG === 'true' || process.env.DEBUG === '1';
+    const isDebug = env.DEBUG;
 
     if (isDebug) {
       callback(null, true);
       return;
     }
 
-    const allowedOrigins = process.env.VITE_API_HOST
-      ? process.env.VITE_API_HOST.split(',').map(o => o.trim())
+    const allowedOrigins = env.VITE_API_HOST
+      ? env.VITE_API_HOST.split(',').map(o => o.trim())
       : [];
 
     if (allowedOrigins.length > 0) {
@@ -23,7 +23,7 @@ const corsOptions = {
       if (!origin) {
         callback(null, true);
       } else {
-        const serverHost = `http://localhost:${process.env.PORT || 3000}`;
+        const serverHost = `http://localhost:${env.PORT}`;
         if (origin === serverHost) {
           callback(null, true);
         } else {
