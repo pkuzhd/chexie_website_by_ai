@@ -132,6 +132,7 @@ class BaseRepository {
   _createRepositoryError(method, originalError) {
     const modelName = this.model.name || 'Model';
     const error = new Error(`[${modelName}Repository.${method}] ${originalError.message}`);
+    error.stack = originalError.stack || error.stack;
     error.originalError = originalError;
     error.method = method;
     error.model = modelName;
