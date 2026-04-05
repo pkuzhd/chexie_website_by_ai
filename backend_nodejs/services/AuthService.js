@@ -18,7 +18,7 @@ class AuthService {
     const token = jwt.sign(
       { userid: user.userid, username: user.username },
       env.JWT_SECRET,
-      { expiresIn: '1h' }
+      { expiresIn: env.JWT_EXPIRES_IN }
     );
 
     const tokentime = Date.now();
