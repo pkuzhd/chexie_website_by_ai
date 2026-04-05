@@ -5,6 +5,7 @@ import Register from '../components/Register.vue';
 import Navbar from '../components/Navbar.vue';
 import BBSMain from '../components/BBSMain.vue';
 import BBSContent from '../components/BBSContent.vue';
+import BBSIndex from '../components/BBSIndex.vue';
 import config from '../config';
 import { useCookie } from '../composables/useCookie';
 
@@ -36,6 +37,16 @@ const Posts = {
 };
 
 const routes = [
+  {
+    path: '/bbs/index',
+    name: 'BBSIndex',
+    components: {
+      default: BBSIndex
+    },
+    meta: {
+      requiresAuth: false
+    }
+  },
   {
     path: '/bbs/main',
     name: 'BBSMain',
@@ -95,10 +106,10 @@ const router = createRouter({
   }
 });
 
-// 重定向根路径到 /bbs/main
+// 重定向根路径到 /bbs/index
 router.addRoute({
   path: '/',
-  redirect: '/bbs/main'
+  redirect: '/bbs/index'
 });
 
 // 验证token是否有效的函数

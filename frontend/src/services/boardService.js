@@ -12,5 +12,10 @@ export const boardService = {
   getBoardInfo: async (bid) => {
     const response = await axios.get(`${API_HOST}/api/boardinfo/${bid}`);
     return response.data.data;
+  },
+
+  getHotThreads: async (params) => {
+    const response = await axios.get(`${API_HOST}/api/threads/hot/all`, { params });
+    return response.data.data || [];
   }
 };
