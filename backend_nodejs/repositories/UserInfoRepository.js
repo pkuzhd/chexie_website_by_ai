@@ -60,8 +60,7 @@ class UserInfoRepository extends BaseRepository {
       where: {
         token,
         tokentime: { [Op.gt]: nowtime - validTime }
-      },
-      attributes: ['username', 'rights', 'icon', 'score', 'star', 'newmsg']
+      }
     });
   }
 
@@ -79,6 +78,34 @@ class UserInfoRepository extends BaseRepository {
     return await this.findOne({
       where: { token }
     });
+  }
+
+  async updateLoginInfo(userid, token, tokentime, lastip, lastdate, onlinetype, logininfo) {
+    return await this.update(
+      {
+        token,
+        tokentime,
+        nowboard: null,
+        lastip,
+        lastdate,
+        onlinetype,
+        logininfo
+      },
+      { where: { userid } }
+    );
+  }
+
+  async updateLogoutInfo(userid, lastip, lastdate) {
+    return await this.update(
+      {
+        token: null,
+        tokentime: null,
+        nowboard: null,
+        lastip,
+        lastdate
+      },
+      { where: { userid } }
+    );
   }
 }
 
