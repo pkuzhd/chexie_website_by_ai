@@ -93,7 +93,14 @@ const updatePagination = () => {
   calculatePages(totalItems);
 };
 
-const goToBoard = debounce(async (targetBid) => {
+const goToBoard = debounce(async (targetBid, event) => {
+  if (event) {
+    event.preventDefault();
+    if (event.ctrlKey || event.metaKey || event.button === 1) {
+      window.open(`/bbs/main?bid=${targetBid}`, '_blank');
+      return;
+    }
+  }
   showMenu.value = false;
   
   const oldBid = bid.value;
