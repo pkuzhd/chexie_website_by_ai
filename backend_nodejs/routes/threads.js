@@ -75,13 +75,13 @@ router.get('/', requireAuthForBid1, async (req, res) => {
           ];
       }
       
-      // 使用Sequelize ORM查询
-      const threads = await Threads.findAll({
+      // 使用Sequelize ORM查询（findAndCountAll一次完成数据和总数查询）
+      const { count: total, rows: threads } = await Threads.findAndCountAll({
         where: { 
           bid: bidInt,
           extr: { [Op.gte]: extr }
         },
-        limit: 25,
+        limit: pageSize,
         offset: start,
         order: order
       });
@@ -91,14 +91,6 @@ router.get('/', requireAuthForBid1, async (req, res) => {
         const threadData = thread.toJSON();
         threadData.global_top = 0;
         return threadData;
-      });
-      
-      // 获取总记录数
-      const total = await Threads.count({
-        where: { 
-          bid: bidInt,
-          extr: { [Op.gte]: extr }
-        }
       });
       
       res.json({
@@ -154,5 +146,25 @@ router.get('/:bid/:tid', requireAuthForBid1, async (req, res) => {
   }
 });
 
+
+// 3. 获取全站热门帖子
+router.get('/hot/all', async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 10;
+    
+    const threads = await Threads.findAll({
+      order: [['timestamp', 'DESC']],
+      limit: limit
+    });
+    
+    res.json({
+      message: '获取热门帖子成功',
+      data: threads
+    });
+  } catch (error) {
+    console.error('获取热门帖子失败:', error);
+    res.status(500).json({ message: '服务器错误' });
+  }
+});
 
 module.exports = router;
