@@ -9,6 +9,7 @@ const sequelize = require('./config/db');
 
 // 导入配置
 const corsOptions = require('./config/cors');
+const { generalLimiter, authLimiter } = require('./config/rateLimit');
 
 // 导入路由
 const authRoutes = require('./routes/auth');
@@ -26,17 +27,18 @@ app.use(express.json());
 app.use(compression());
 app.use(cookieParser());
 app.use(cors(corsOptions));
+app.use(generalLimiter);
 
 // 定义/test接口
 app.get('/test', (req, res) => {
   res.json({ result: 'test' });
 });
 
-// 使用认证路由
-app.use('/api/auth', authRoutes);
+// 使用认证路由（应用更严格的登录限流）
+app.use('/api/auth', authLimiter, authRoutes);
 
 // 使用传统认证路由（兼容PHP风格）
-app.use('/api/auth_legacy', authLegacyRoutes);
+app.use('/api/auth_legacy', authLimiter, authLegacyRoutes);
 
 // 使用板块信息路由
 app.use('/api/boardinfo', boardinfoRoutes);
@@ -51,7 +53,7 @@ app.use('/api/threads', threadsRoutes);
 app.use('/api/posts', postsRoutes);
 
 // 启动服务器
-const PORT = process.env.PORT || 3000;
+const PORT = require('./config/env').PORT;
 app.listen(PORT, () => {
   console.log(`服务器运行在 http://localhost:${PORT}`);
 });

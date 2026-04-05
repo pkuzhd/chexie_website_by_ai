@@ -14,7 +14,10 @@ const optionalEnvVars = [
   { name: 'PORT', defaultValue: 3000 },
   { name: 'DEBUG', defaultValue: 'false' },
   { name: 'VITE_API_HOST', defaultValue: '' },
-  { name: 'NODE_ENV', defaultValue: 'development' }
+  { name: 'NODE_ENV', defaultValue: 'development' },
+  { name: 'RATE_LIMIT_WINDOW_MS', defaultValue: 15 * 60 * 1000 },
+  { name: 'RATE_LIMIT_GENERAL_MAX', defaultValue: 100 },
+  { name: 'RATE_LIMIT_AUTH_MAX', defaultValue: 10 }
 ];
 
 function validateEnv() {
@@ -49,7 +52,10 @@ function validateEnv() {
     PORT: parseInt(process.env.PORT),
     DEBUG: process.env.DEBUG === 'true' || process.env.DEBUG === '1',
     VITE_API_HOST: process.env.VITE_API_HOST,
-    NODE_ENV: process.env.NODE_ENV
+    NODE_ENV: process.env.NODE_ENV,
+    RATE_LIMIT_WINDOW_MS: parseInt(process.env.RATE_LIMIT_WINDOW_MS),
+    RATE_LIMIT_GENERAL_MAX: parseInt(process.env.RATE_LIMIT_GENERAL_MAX),
+    RATE_LIMIT_AUTH_MAX: parseInt(process.env.RATE_LIMIT_AUTH_MAX)
   };
 }
 
