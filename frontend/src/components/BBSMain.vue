@@ -36,6 +36,10 @@ const popoverStyle = computed(() => ({
 
 const todayDate = computed(() => getTodayDate());
 
+const visibleBoards = computed(() => {
+  return boards.value.filter(b => b.hide === 0);
+});
+
 const iconUrl = '/images/icon.png';
 const lockIconUrl = '/images/lock.png';
 const extrIconUrl = '/images/extr.png';
@@ -311,7 +315,10 @@ watch(() => route.query, async (newQuery) => {
         <span style="margin-left:32px;"><b>返回</b></span>
       </div>
       <span style="float:left;margin-left:20px;position:relative;"> 
-        <a href="#" @mouseenter="showMenuFunc(true)">CAPUBBS</a>
+        <a 
+          @mouseenter="showMenuFunc(true)" 
+          @click="router.push('/bbs/index')"
+        >CAPUBBS</a>
         <span>&nbsp;&gt;&nbsp;</span>
         <a :href="`?bid=${bid}&p=1`">{{ boardInfo?.bbstitle }}{{ extr === 1 ? '（精品区）' : '' }}</a>
         <span>&nbsp;&gt;&nbsp;</span>
@@ -331,7 +338,7 @@ watch(() => route.query, async (newQuery) => {
           @mouseleave="showMenuFunc(false)"
         >
           <table class="popover">
-            <tr v-for="b in boards" :key="b.bid">
+            <tr v-for="b in visibleBoards" :key="b.bid">
               <td @click="goToBoard(b.bid)">{{ b.bbstitle }}</td>
             </tr>
           </table>

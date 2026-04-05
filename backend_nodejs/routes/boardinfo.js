@@ -11,7 +11,6 @@ router.get('/', async (req, res) => {
   try {
     // 查询所有板块信息，不包含隐藏的板块（hide=0）
     const boardinfo = await BoardInfo.findAll({
-      where: { hide: 0 },
       order: [['bid', 'ASC']] // 按照板块ID升序排列
     });
     
