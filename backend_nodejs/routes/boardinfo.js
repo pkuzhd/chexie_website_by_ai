@@ -36,7 +36,7 @@ router.get('/:bid', async (req, res) => {
     }
     
     const boardinfo = await BoardInfo.findOne({
-      where: { bid, hide: 0 }
+      where: { bid }
     });
     
     if (!boardinfo) {
