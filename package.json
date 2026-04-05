@@ -1,0 +1,12 @@
+{
+  "name": "project-root",
+  "version": "1.0.0",
+  "description": "同时启动前端和后端服务",
+  "scripts": {
+    "dev": "node dev.js",
+    "start": "node dev.js"
+  },
+  "keywords": ["dev", "startup", "automation"],
+  "author": "",
+  "license": "ISC"
+}
