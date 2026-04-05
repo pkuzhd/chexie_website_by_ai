@@ -38,4 +38,21 @@ sequelize.authenticate()
     console.error('数据库连接失败:', err.message);
   });
 
+// 优雅关闭数据库连接
+const gracefulShutdown = async (signal) => {
+  console.log(`\n接收到 ${signal} 信号，正在关闭数据库连接...`);
+  try {
+    await sequelize.close();
+    console.log('数据库连接已关闭');
+    process.exit(0);
+  } catch (error) {
+    console.error('关闭数据库连接失败:', error);
+    process.exit(1);
+  }
+};
+
+// 监听终止信号
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
 module.exports = sequelize;
