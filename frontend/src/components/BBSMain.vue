@@ -1,29 +1,27 @@
 <script setup>
-import { ref, onMounted, computed, watch, inject } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import axios from 'axios';
-import config from '../config';
 import { useAuth } from '../composables/useAuth';
 import { usePagination } from '../composables/usePagination';
 import { useDebounce } from '../composables/useDebounce';
+import { useBoardData } from '../composables/useBoardData';
 import { formatDate, getTodayDate } from '../utils/date';
+import { threadService } from '../services/threadService';
 import '../assets/css/general.css';
 import '../assets/css/style.css';
 
 const route = useRoute();
 const router = useRouter();
-const API_HOST = config.API_HOST;
 
 const { currentUser, getCurrentUser, handleLogout } = useAuth();
 const { page, totalPages, pageNumbers, jumpPageNumbers, calculatePages } = usePagination();
 const { isDisabled: isClickDisabled, debounce } = useDebounce(500);
+const { boards, boardInfo, loadBoards, loadBoardInfo } = useBoardData();
 
 const bid = ref(2);
 const extr = ref(0);
 const sortBy = ref('default');
-const boardInfo = ref(null);
 const threads = ref([]);
-const boards = ref([]);
 const isLoading = ref(true);
 const error = ref(null);
 const showMenu = ref(false);
@@ -72,47 +70,16 @@ const handleLink = (event, url) => {
   }
 };
 
-const loadBoards = async () => {
-  try {
-    const response = await axios.get(`${API_HOST}/api/boardinfo`);
-    boards.value = response.data.data || [];
-    await loadBoardInfo();
-  } catch (err) {
-    console.error('加载板块列表失败:', err);
-  }
-};
-
-const loadBoardInfo = async () => {
-  try {
-    const response = await axios.get(`${API_HOST}/api/boardinfo/${bid.value}`);
-    boardInfo.value = response.data.data;
-    if (boardInfo.value?.bbstitle) {
-      document.title = boardInfo.value.bbstitle;
-    }
-    updatePagination();
-  } catch (err) {
-    console.error('加载板块信息失败:', err);
-  }
-};
-
 const loadThreads = async () => {
   error.value = null;
   
   try {
-    const response = await axios.get(`${API_HOST}/api/threads`, {
-      params: {
-        bid: bid.value,
-        p: page.value,
-        extr: extr.value,
-        p_size: 25,
-        sort_by: sortBy.value
-      }
+    threads.value = await threadService.getThreads({
+      bid: bid.value,
+      page: page.value,
+      extr: extr.value,
+      sortBy: sortBy.value
     });
-    
-    if (response.data.data && response.data.data.threads) {
-      threads.value = response.data.data.threads;
-    }
-    
   } catch (err) {
     error.value = '加载失败，请稍后重试';
     console.error('加载主题帖失败:', err);
@@ -123,7 +90,7 @@ const loadThreads = async () => {
 
 const updatePagination = () => {
   const totalItems = extr.value === 1 ? (boardInfo.value?.extr || 0) : (boardInfo.value?.topics || 0);
-  calculatePages(totalItems, page.value);
+  calculatePages(totalItems);
 };
 
 const goToBoard = debounce(async (targetBid) => {
@@ -134,9 +101,10 @@ const goToBoard = debounce(async (targetBid) => {
   page.value = 1;
   
   if (oldBid !== targetBid) {
-    await loadBoardInfo();
+    await loadBoardInfo(targetBid);
   }
   await loadThreads();
+  updatePagination();
   
   const query = { bid: targetBid, p: 1 };
   if (sortBy.value !== 'default') {
@@ -213,32 +181,45 @@ const toggleShowExtr = debounce(async (event) => {
   router.push({ query });
 });
 
-onMounted(() => {
-  const urlBid = route.query.bid;
-  const urlPage = route.query.p;
-  const urlExtr = route.query.extr;
-  const urlSortBy = route.query.sort_by;
+const initFromRoute = () => {
+  const query = route.query;
   
-  if (urlBid) {
-    bid.value = parseInt(urlBid);
-  }
-  if (urlPage) {
-    page.value = parseInt(urlPage);
-  }
-  if (urlExtr !== undefined) {
-    extr.value = parseInt(urlExtr);
-  }
-  if (urlSortBy) {
-    sortBy.value = urlSortBy;
+  if (query.bid) {
+    bid.value = parseInt(query.bid);
+  } else {
+    bid.value = 2;
   }
   
+  if (query.p) {
+    page.value = parseInt(query.p);
+  } else {
+    page.value = 1;
+  }
+  
+  if (query.extr) {
+    extr.value = parseInt(query.extr);
+  } else {
+    extr.value = 0;
+  }
+  
+  if (query.sort_by) {
+    sortBy.value = query.sort_by;
+  } else {
+    sortBy.value = 'default';
+  }
+};
+
+onMounted(async () => {
+  initFromRoute();
   getCurrentUser();
-  loadBoards();
-  loadThreads();
+  await loadBoards();
+  await loadBoardInfo(bid.value);
+  await loadThreads();
+  updatePagination();
 });
 
 // 监听 URL 参数变化
-watch(() => route.query, (newQuery) => {
+watch(() => route.query, async (newQuery) => {
   const newBid = newQuery.bid;
   const newPage = newQuery.p;
   const newExtr = newQuery.extr;
@@ -271,7 +252,7 @@ watch(() => route.query, (newQuery) => {
   }
   
   if (oldBid !== bid.value) {
-    loadBoardInfo();
+    loadBoardInfo(bid.value);
   }
   if (oldSortBy !== sortBy.value || oldExtr !== extr.value || oldPage !== page.value || oldBid !== bid.value) {
     loadThreads();
@@ -285,7 +266,6 @@ watch(() => route.query, (newQuery) => {
 
 <template>
   <div>
-    <!-- 页面头部 -->
     <div class="header">
       <br>
       <h2>{{ boardInfo?.bbstitle }}{{ extr === 1 ? '（精品区）' : '' }}</h2>
@@ -319,7 +299,6 @@ watch(() => route.query, (newQuery) => {
       </div>
     </div>
 
-    <!-- 导航栏 -->
     <div class="navigation">
       <div class="back" @click="router.push('/bbs/index')">
         <span style="margin-left:32px;"><b>返回</b></span>
@@ -353,7 +332,6 @@ watch(() => route.query, (newQuery) => {
       </span>
     </div>
 
-    <!-- 搜索区域 -->
     <table class="searchArea">
       <tbody>
         <tr>
@@ -395,17 +373,14 @@ watch(() => route.query, (newQuery) => {
       </tbody>
     </table>
 
-    <!-- 加载状态 -->
     <div v-if="isLoading" class="loading">
       <p>加载中...</p>
     </div>
 
-    <!-- 错误信息 -->
     <div v-else-if="error" class="error">
       <p>{{ error }}</p>
     </div>
 
-    <!-- 主题帖列表 -->
     <div v-else class="mainandbts">
       <table class="main" id="table">
         <tbody>

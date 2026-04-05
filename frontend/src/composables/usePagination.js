@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 
 export function usePagination(initialPage = 1, pageSize = 25) {
   const page = ref(initialPage);
@@ -6,10 +6,7 @@ export function usePagination(initialPage = 1, pageSize = 25) {
   const pageNumbers = ref([]);
   const jumpPageNumbers = ref([]);
 
-  const calculatePages = (totalItems, currentPage = page.value) => {
-    page.value = currentPage;
-    totalPages.value = Math.max(1, Math.ceil(totalItems / pageSize));
-    
+  const updatePageNumbers = () => {
     const pages = [];
     const start = Math.max(1, page.value - 4);
     const end = Math.min(totalPages.value, start + 9);
@@ -19,6 +16,11 @@ export function usePagination(initialPage = 1, pageSize = 25) {
     pageNumbers.value = pages;
     
     generateJumpPages();
+  };
+
+  const calculatePages = (totalItems) => {
+    totalPages.value = Math.max(1, Math.ceil(totalItems / pageSize));
+    updatePageNumbers();
   };
 
   const generateJumpPages = () => {
@@ -60,7 +62,7 @@ export function usePagination(initialPage = 1, pageSize = 25) {
   const setPage = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages.value) {
       page.value = newPage;
-      calculatePages(totalPages.value * 25);
+      updatePageNumbers();
     }
   };
 
