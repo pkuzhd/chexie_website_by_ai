@@ -62,15 +62,15 @@ class AuthLegacyService {
       logininfo = system || '';
     }
 
-    await user.update({
-      tokentime: nowtime,
+    await userInfoRepository.updateLoginInfo(
+      user.userid,
       token,
-      nowboard: null,
-      lastip: clientIp,
-      lastdate: today,
-      onlinetype: onlinetype || null,
+      nowtime,
+      clientIp,
+      today,
+      onlinetype || null,
       logininfo
-    });
+    );
 
     return {
       code: 0,
@@ -80,7 +80,7 @@ class AuthLegacyService {
   }
 
   async logout(token, clientIp) {
-    const user = await userInfoRepository.findByToken(token);
+    const user = await userInfoRepository.findByTokenAndValidTokenTime(token, VALID_TIME);
     if (!user) {
       return {
         code: 2,
@@ -89,13 +89,7 @@ class AuthLegacyService {
     }
 
     const today = new Date().toISOString().split('T')[0];
-    await user.update({
-      tokentime: null,
-      token: null,
-      nowboard: null,
-      lastip: clientIp,
-      lastdate: today
-    });
+    await userInfoRepository.updateLogoutInfo(user.userid, clientIp, today);
 
     return {
       code: 0,
