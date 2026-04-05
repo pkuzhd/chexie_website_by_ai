@@ -14,11 +14,9 @@ class ThreadsRepository extends BaseRepository {
   }
 
   async findAndCountAllByBid(bid, options = {}) {
-    return await this.model.findAndCountAll({
+    return await this.findAndCountAll({
       where: { bid, ...options.where },
-      limit: options.limit,
-      offset: options.offset,
-      order: options.order
+      ...options
     });
   }
 

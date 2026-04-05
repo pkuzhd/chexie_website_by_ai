@@ -38,7 +38,18 @@ class AuthService {
   }
 
   async getCurrentUser(token) {
-    const decoded = jwt.verify(token, env.JWT_SECRET);
+    let decoded;
+    try {
+      decoded = jwt.verify(token, env.JWT_SECRET);
+    } catch (error) {
+      if (error.name === 'TokenExpiredError') {
+        throw new Error('令牌已过期');
+      }
+      if (error.name === 'JsonWebTokenError') {
+        throw new Error('无效令牌');
+      }
+      throw error;
+    }
 
     const user = await userInfoRepository.findByUserid(decoded.userid, [
       'userid', 'username', 'mail', 'sex', 'icon', 'intro', 'regdate', 'post', 'reply', 'score', 'token'
@@ -57,7 +68,18 @@ class AuthService {
   }
 
   async logout(token) {
-    const decoded = jwt.verify(token, env.JWT_SECRET);
+    let decoded;
+    try {
+      decoded = jwt.verify(token, env.JWT_SECRET);
+    } catch (error) {
+      if (error.name === 'TokenExpiredError') {
+        throw new Error('令牌已过期');
+      }
+      if (error.name === 'JsonWebTokenError') {
+        throw new Error('无效令牌');
+      }
+      throw error;
+    }
 
     const user = await userInfoRepository.findByUserid(decoded.userid);
     if (!user) {
