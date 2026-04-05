@@ -1,6 +1,8 @@
 const { Sequelize } = require('sequelize');
 require('dotenv').config();
 
+const isDebug = process.env.DEBUG === 'true' || process.env.DEBUG === '1';
+
 // 创建数据库连接
 const sequelize = new Sequelize(
   process.env.DB_NAME, // 数据库名
@@ -10,7 +12,12 @@ const sequelize = new Sequelize(
     host: process.env.DB_HOST,
     dialect: process.env.DB_DIALECT,
     port: process.env.DB_PORT,
-    logging: false, // 关闭日志输出
+    logging: isDebug ? (sql, queryObject) => {
+      console.log('\n[SQL]', sql);
+      if (queryObject.bind) {
+        console.log('[Parameters]', queryObject.bind);
+      }
+    } : false,
     dialectOptions: {
       charset: 'utf8mb4'
     },
