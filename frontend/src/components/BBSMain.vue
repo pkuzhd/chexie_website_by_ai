@@ -1,59 +1,49 @@
 <script setup>
-import { ref, onMounted, computed, onBeforeUnmount, watch, inject } from 'vue';
+import { ref, onMounted, computed, watch, inject } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 import config from '../config';
-import { useCookie } from '../composables/useCookie';
+import { useAuth } from '../composables/useAuth';
+import { usePagination } from '../composables/usePagination';
+import { useDebounce } from '../composables/useDebounce';
+import { formatDate, getTodayDate } from '../utils/date';
 import '../assets/css/general.css';
 import '../assets/css/style.css';
 
 const route = useRoute();
 const router = useRouter();
-const { getCookie } = useCookie();
-
-// API配置
 const API_HOST = config.API_HOST;
 
-// 响应式数据
+const { currentUser, getCurrentUser, handleLogout } = useAuth();
+const { page, totalPages, pageNumbers, jumpPageNumbers, calculatePages } = usePagination();
+const { isDisabled: isClickDisabled, debounce } = useDebounce(500);
+
 const bid = ref(2);
-const page = ref(1);
 const extr = ref(0);
 const sortBy = ref('default');
 const boardInfo = ref(null);
 const threads = ref([]);
 const boards = ref([]);
-const currentUser = inject('currentUser');
-
 const isLoading = ref(true);
 const error = ref(null);
 const showMenu = ref(false);
-const popoverStyle = computed(() => ({
-  display: showMenu.value ? 'block' : 'none'
-}));
-const searchKeyword = ref('');
-const searchType = ref('thread');
-const searchRange = ref('1');
-const isClickDisabled = ref(false);
-
-// 搜索相关
 const showMore = ref(false);
 const starttime = ref('');
 const endtime = ref('');
+const searchRange = ref('1');
 
-// 图片路径（使用public目录下的绝对路径）
-const iconUrl = ref('/images/icon.png');
-const lockIconUrl = ref('/images/lock.png');
-const extrIconUrl = ref('/images/extr.png');
-const topIconUrl = ref('/images/top.png');
-const waitingGifUrl = ref('/images/waiting.gif');
+const popoverStyle = computed(() => ({
+  display: showMenu.value ? 'block' : 'none'
+}));
 
-// 计算今日日期
-const todayDate = computed(() => {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-});
+const todayDate = computed(() => getTodayDate());
 
-// 搜索时间变化
+const iconUrl = '/images/icon.png';
+const lockIconUrl = '/images/lock.png';
+const extrIconUrl = '/images/extr.png';
+const topIconUrl = '/images/top.png';
+const waitingGifUrl = '/images/waiting.gif';
+
 const searchTimeChange = () => {
   const now = new Date();
   const last = parseInt(searchRange.value);
@@ -66,18 +56,15 @@ const searchTimeChange = () => {
   endtime.value = `${endDate.getFullYear()}-${endDate.getMonth() + 1}-${endDate.getDate()}`;
 };
 
-// 显示更多搜索选项
 const showMoreSearch = () => {
   showMore.value = true;
   searchTimeChange();
 };
 
-// 显示/隐藏菜单
 const showMenuFunc = (show) => {
   showMenu.value = show;
 };
 
-// 处理链接点击
 const handleLink = (event, url) => {
   if (event && (event.ctrlKey || event.metaKey || event.button === 1)) {
     event.preventDefault();
@@ -85,75 +72,6 @@ const handleLink = (event, url) => {
   }
 };
 
-// 获取当前用户信息
-const getCurrentUser = async () => {
-  try {
-    const token = getCookie('token');
-    console.log('获取到的token:', token);
-    if (!token) {
-      currentUser.value = null;
-      return;
-    }
-    
-    const response = await axios.get(`${API_HOST}/api/auth_legacy/current`, {
-      withCredentials: true
-    });
-    console.log('获取当前用户信息成功:', response.data);
-    
-    if (response.data.username) {
-      currentUser.value = {
-        username: response.data.username,
-        rights: response.data.rights || 0,
-        icon: response.data.icon,
-        score: response.data.score || 0,
-        star: response.data.star || 0,
-        newmsg: response.data.newmsg || 0,
-      };
-    } else {
-      currentUser.value = null;
-    }
-  } catch (err) {
-    console.error('获取当前用户信息失败:', err);
-    currentUser.value = null;
-  }
-};
-
-// 处理注销
-const handleLogout = async () => {
-  try {
-    const token = getCookie('token');
-    if (!token) {
-      currentUser.value = null;
-      return;
-    }
-    
-    // 调用后端注销接口
-    const response = await axios.post(`${API_HOST}/api/auth_legacy/logout`, {
-      token
-    }, {
-      withCredentials: true
-    });
-    
-    console.log('注销成功:', response.data);
-    
-    // 清理cookie中的token
-    document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-    localStorage.removeItem('token');
-    
-    // 更新前端状态
-    currentUser.value = null;
-  } catch (err) {
-    console.error('注销失败:', err);
-    // 即使失败也清理前端状态
-    document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-    localStorage.removeItem('token');
-    
-    // 更新前端状态
-    currentUser.value = null;
-  }
-};
-
-// 加载板块列表
 const loadBoards = async () => {
   try {
     const response = await axios.get(`${API_HOST}/api/boardinfo`);
@@ -164,23 +82,19 @@ const loadBoards = async () => {
   }
 };
 
-// 加载板块信息
 const loadBoardInfo = async () => {
   try {
     const response = await axios.get(`${API_HOST}/api/boardinfo/${bid.value}`);
     boardInfo.value = response.data.data;
-    // 更新网页标题
     if (boardInfo.value?.bbstitle) {
       document.title = boardInfo.value.bbstitle;
     }
-    // 重新计算页码
-    calculatePages();
+    updatePagination();
   } catch (err) {
     console.error('加载板块信息失败:', err);
   }
 };
 
-// 加载主题帖列表
 const loadThreads = async () => {
   error.value = null;
   
@@ -207,45 +121,31 @@ const loadThreads = async () => {
   }
 };
 
-// 跳转到板块（带防抖机制）
-const goToBoard = async (targetBid) => {
-  if (isClickDisabled.value) {
-    return;
-  }
-  
-  isClickDisabled.value = true;
-  showMenu.value = false;
-  
-  try {
-    // 先更新本地状态
-    const oldBid = bid.value;
-    bid.value = targetBid;
-    page.value = 1;
-    
-    // 加载数据
-    if (oldBid !== targetBid) {
-      await loadBoardInfo();
-    }
-    await loadThreads();
-    calculatePages();
-    
-    // 数据加载完成后更新URL
-    const query = { bid: targetBid, p: 1 };
-    if (sortBy.value !== 'default') {
-      query.sort_by = sortBy.value;
-    }
-    router.push({ query });
-  } catch (error) {
-    console.error('跳转到板块失败:', error);
-  } finally {
-    setTimeout(() => {
-      isClickDisabled.value = false;
-    }, 500);
-  }
+const updatePagination = () => {
+  const totalItems = extr.value === 1 ? (boardInfo.value?.extr || 0) : (boardInfo.value?.topics || 0);
+  calculatePages(totalItems, page.value);
 };
 
-// 跳转到页面（带防抖机制）
-const goToPage = async (targetPage, event) => {
+const goToBoard = debounce(async (targetBid) => {
+  showMenu.value = false;
+  
+  const oldBid = bid.value;
+  bid.value = targetBid;
+  page.value = 1;
+  
+  if (oldBid !== targetBid) {
+    await loadBoardInfo();
+  }
+  await loadThreads();
+  
+  const query = { bid: targetBid, p: 1 };
+  if (sortBy.value !== 'default') {
+    query.sort_by = sortBy.value;
+  }
+  router.push({ query });
+});
+
+const goToPage = debounce(async (targetPage, event) => {
   if (event) {
     event.preventDefault();
     if (event.ctrlKey || event.metaKey || event.button === 1) {
@@ -254,122 +154,66 @@ const goToPage = async (targetPage, event) => {
     }
   }
   
-  if (isClickDisabled.value) {
-    return;
+  page.value = targetPage;
+  await loadThreads();
+  updatePagination();
+  
+  const query = { bid: bid.value, p: targetPage };
+  if (extr.value === 1) {
+    query.extr = 1;
   }
+  if (sortBy.value !== 'default') {
+    query.sort_by = sortBy.value;
+  }
+  router.push({ query });
+});
+
+const handleSortChange = async () => {
+  await loadThreads();
+  updatePagination();
   
-  isClickDisabled.value = true;
-  
-  try {
-    // 先更新本地状态
-    page.value = targetPage;
-    
-    // 加载数据
-    await loadThreads();
-    calculatePages();
-    
-    // 数据加载完成后更新URL
-    const query = { bid: bid.value, p: targetPage };
-    if (extr.value === 1) {
-      query.extr = 1;
+  const query = { bid: bid.value, p: page.value };
+  if (extr.value === 1) {
+    query.extr = 1;
+  }
+  if (sortBy.value !== 'default') {
+    query.sort_by = sortBy.value;
+  }
+  router.push({ query });
+};
+
+const toggleShowExtr = debounce(async (event) => {
+  const newExtr = extr.value === 1 ? 0 : 1;
+  if (event) {
+    event.preventDefault();
+    if (event.ctrlKey || event.metaKey || event.button === 1) {
+      let url = `?bid=${bid.value}&p=${page.value}`;
+      if (newExtr === 1) {
+        url += `&extr=${newExtr}`;
+      }
+      if (sortBy.value !== 'default') {
+        url += `&sort_by=${sortBy.value}`;
+      }
+      window.open(url, '_blank');
+      return;
     }
-    if (sortBy.value !== 'default') {
-      query.sort_by = sortBy.value;
-    }
-    router.push({ query });
-  } catch (error) {
-    console.error('跳转到页面失败:', error);
-  } finally {
-    setTimeout(() => {
-      isClickDisabled.value = false;
-    }, 500);
-  }
-};
-
-// 格式化日期
-const formatDate = (timestamp) => {
-  if (!timestamp) return '';
-  const date = new Date(timestamp * 1000);
-  return date.toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit'
-  });
-};
-
-// 总页数
-const totalPages = ref(1);
-
-// 页码数组
-const pageNumbers = ref([]);
-
-// 跳转页码数组
-const jumpPageNumbers = ref([]);
-
-// 计算页码的函数
-const calculatePages = () => {
-  // 计算总页数
-  totalPages.value = Math.max(1, Math.ceil((extr.value === 1 ? (boardInfo.value?.extr || 0) : (boardInfo.value?.topics || 0)) / 25));
-  
-  // 生成分页显示的页码数组
-  const pages = [];
-  const start = Math.max(1, page.value - 4);
-  const end = Math.min(totalPages.value, start + 9);
-  for (let i = start; i <= end; i++) {
-    pages.push(i);
-  }
-  pageNumbers.value = pages;
-  
-  // 生成智能跳转页码数组
-  generateJumpPages();
-};
-
-// 生成智能跳转页码数组
-const generateJumpPages = () => {
-  const pages = [];
-  let counter = 0;
-  
-  // 从当前页向前生成
-  for (let i = page.value; i > 0;) {
-    counter++;
-    pages.unshift(i);
-    if (counter < 50) i--;
-    else if (counter < 100) i -= 10;
-    else if (counter < 150) i -= 100;
-    else if (counter < 200) i -= 1000;
-    else break;
   }
   
-  // 确保包含第1页
-  if (pages[0] !== 1) {
-    pages.unshift(1);
-  }
+  extr.value = newExtr;
+  await loadThreads();
+  updatePagination();
   
-  // 从当前页向后生成
-  counter = 0;
-  for (let i = page.value + 1; i <= totalPages.value;) {
-    counter++;
-    pages.push(i);
-    if (counter < 50) i++;
-    else if (counter < 100) i += 10;
-    else if (counter < 150) i += 100;
-    else if (counter < 200) i += 1000;
-    else break;
+  const query = { bid: bid.value, p: page.value };
+  if (newExtr === 1) {
+    query.extr = 1;
   }
-  
-  // 确保包含最后一页
-  if (pages[pages.length - 1] !== totalPages.value) {
-    pages.push(totalPages.value);
+  if (sortBy.value !== 'default') {
+    query.sort_by = sortBy.value;
   }
-  
-  jumpPageNumbers.value = pages;
-};
+  router.push({ query });
+});
 
 onMounted(() => {
-  
   const urlBid = route.query.bid;
   const urlPage = route.query.p;
   const urlExtr = route.query.extr;
@@ -387,8 +231,8 @@ onMounted(() => {
   if (urlSortBy) {
     sortBy.value = urlSortBy;
   }
-  getCurrentUser();
   
+  getCurrentUser();
   loadBoards();
   loadThreads();
 });
@@ -407,9 +251,13 @@ watch(() => route.query, (newQuery) => {
 
   if (newBid) {
     bid.value = parseInt(newBid);
+  } else if (oldBid && !newBid) {
+    bid.value = 2;
   }
   if (newPage) {
     page.value = parseInt(newPage);
+  } else if (oldPage && !newPage) {
+    page.value = 1;
   }
   if (newExtr !== undefined) {
     extr.value = parseInt(newExtr);
@@ -428,78 +276,11 @@ watch(() => route.query, (newQuery) => {
   if (oldSortBy !== sortBy.value || oldExtr !== extr.value || oldPage !== page.value || oldBid !== bid.value) {
     loadThreads();
   }
+  
+  if (boardInfo.value) {
+    updatePagination();
+  }
 }, { immediate: false });
-
-// 处理排序方式变化
-const handleSortChange = async () => {
-  try {
-    // 加载数据
-    await loadThreads();
-    calculatePages();
-    
-    // 数据加载完成后更新URL
-    const query = { bid: bid.value, p: page.value };
-    if (extr.value === 1) {
-      query.extr = 1;
-    }
-    if (sortBy.value !== 'default') {
-      query.sort_by = sortBy.value;
-    }
-    router.push({ query });
-  } catch (error) {
-    console.error('切换排序方式失败:', error);
-  }
-};
-
-// 切换显示精华帖
-const toggleShowExtr = async (event) => {
-  const newExtr = extr.value === 1 ? 0 : 1;
-  if (event) {
-    event.preventDefault();
-    if (event.ctrlKey || event.metaKey || event.button === 1) {
-      let url = `?bid=${bid.value}&p=${page.value}`;
-      if (newExtr === 1) {
-        url += `&extr=${newExtr}`;
-      }
-      if (sortBy.value !== 'default') {
-        url += `&sort_by=${sortBy.value}`;
-      }
-      window.open(url, '_blank');
-      return;
-    }
-  }
-  
-  if (isClickDisabled.value) {
-    return;
-  }
-  
-  isClickDisabled.value = true;
-  
-  try {
-    // 先更新本地状态
-    extr.value = newExtr;
-    
-    // 加载数据
-    await loadThreads();
-    calculatePages();
-    
-    // 数据加载完成后更新URL
-    const query = { bid: bid.value, p: page.value };
-    if (newExtr === 1) {
-      query.extr = 1;
-    }
-    if (sortBy.value !== 'default') {
-      query.sort_by = sortBy.value;
-    }
-    router.push({ query });
-  } catch (error) {
-    console.error('切换精华帖显示失败:', error);
-  } finally {
-    setTimeout(() => {
-      isClickDisabled.value = false;
-    }, 500);
-  }
-};
 </script>
 
 <template>
@@ -573,7 +354,6 @@ const toggleShowExtr = async (event) => {
     </div>
 
     <!-- 搜索区域 -->
-     
     <table class="searchArea">
       <tbody>
         <tr>
@@ -693,7 +473,6 @@ const toggleShowExtr = async (event) => {
     </div>
 
     <br>
-    <!-- 分页控件 -->
     <div class="pagecontrol">
       <a 
         v-if="page > 1" 
@@ -746,7 +525,6 @@ const toggleShowExtr = async (event) => {
       </select>
     </div>
 
-    <!-- 编辑区域 -->
     <div v-if="currentUser" class="editor" id="editor">
 			<input type="text" class="title" placeholder="帖子标题" id="raw_title">
 			<div id="edi_bar"></div>
@@ -763,9 +541,7 @@ const toggleShowExtr = async (event) => {
 			<div id="edi_submit" onclick="doreply();">发表帖子</div>
 			<br><br><br>
 			<span id="attachtip" style="display:none;">本帖包含的附件：</span>
-			<!-- <div class="attachs" id="attachs"></div> -->
 			<span id="unusedattachtip" style="display:none;">您曾上传但未使用的附件：（可直接链接到本贴）<img :src="waitingGifUrl" width="15px" id="waitinggif" style="visibility:hidden;"></span>
-			<!-- <div class="attachs" id="unusedattachs"></div> -->
 		</div>
     <div v-if="!currentUser" class="editip" id="editip">
       <span class="editip">
@@ -784,13 +560,11 @@ const toggleShowExtr = async (event) => {
       </span>
     </div>
 
-    <!-- 底部留白 -->
     <div class="footer"></div>
   </div>
 </template>
 
 <style scoped>
-/* 只保留必要的加载和错误样式，其他使用外部CSS */
 .loading, .error {
   text-align: center;
   padding: 40px;
