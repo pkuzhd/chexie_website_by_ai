@@ -28,9 +28,18 @@ const isLoadingHot = ref(true);
 const isLoadingGlobalTop = ref(true);
 const showOthers = ref(false);
 
+const getThreadLink = (thread) => {
+  if (thread.is_activity === 1 || thread.global_top === 1) {
+    return `/bbs/content/?bid=${thread.bid}&tid=${thread.tid}&p=1#1`;
+  }
+  const num = (thread.reply || 0) + 1;
+  const page = Math.ceil(num / 12);
+  return `/bbs/content/?bid=${thread.bid}&tid=${thread.tid}&p=${page}#${num}`;
+};
+
 const loadHotThreads = async () => {
   try {
-    const response = await boardService.getHotThreads({ hotnum: 15 });
+    const response = await boardService.getHotThreads({ hotnum: 10 });
     hotThreads.value = response || [];
   } catch (err) {
     console.error('加载热门帖子失败:', err);
@@ -151,13 +160,13 @@ onMounted(() => {
           </div>
           <ul v-else>
             <li v-for="thread in globalTopThreads" :key="`${thread.bid}-${thread.tid}`">
-              <a :href="`../content/?bid=${thread.bid}&tid=${thread.tid}&p=1#1`">
-                {{ thread.title }}
+              <a :href="getThreadLink(thread)">
+                【置顶】{{ thread.title }}
               </a>
               <br>
               <span class='hint'>
                 <span class='hint2'>{{ thread.replyer || thread.author }}</span>
-                &nbsp;于&nbsp;
+                <span>&nbsp;于&nbsp;</span>
                 <span class='hint2'>{{ formatDate(thread.timestamp) }}</span>
               </span>
             </li>
@@ -168,13 +177,13 @@ onMounted(() => {
           </div>
           <ul v-else>
             <li v-for="thread in hotThreads" :key="`${thread.bid}-${thread.tid}`">
-              <a :href="`../content/?bid=${thread.bid}&tid=${thread.tid}&p=1#1`">
+              <a :href="getThreadLink(thread)">
                 {{ thread.title }}
               </a>
               <br>
               <span class='hint'>
                 <span class='hint2'>{{ thread.replyer || thread.author }}</span>
-                &nbsp;于&nbsp;
+                <span>&nbsp;于&nbsp;</span>
                 <span class='hint2'>{{ formatDate(thread.timestamp) }}</span>
               </span>
             </li>
