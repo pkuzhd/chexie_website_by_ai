@@ -1,4 +1,4 @@
-const rateLimit = require('express-rate-limit');
+const { rateLimit, ipKeyGenerator } = require('express-rate-limit');
 const env = require('./env');
 
 const isProduction = env.NODE_ENV === 'production';
@@ -20,7 +20,8 @@ const generalLimiter = createRateLimiter({
     statusCode: 429
   },
   keyGenerator: (req) => {
-    return req.ip || req.connection.remoteAddress;
+    const ip = req.ip || req.connection.remoteAddress;
+    return ipKeyGenerator(ip);
   },
   handler: (req, res, next, options) => {
     if (!isProduction) {
@@ -39,7 +40,8 @@ const authLimiter = createRateLimiter({
     statusCode: 429
   },
   keyGenerator: (req) => {
-    return req.ip || req.connection.remoteAddress;
+    const ip = req.ip || req.connection.remoteAddress;
+    return ipKeyGenerator(ip);
   },
   handler: (req, res, next, options) => {
     if (!isProduction) {
