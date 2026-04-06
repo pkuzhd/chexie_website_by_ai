@@ -15,7 +15,12 @@ export const boardService = {
   },
 
   getHotThreads: async (params) => {
-    const response = await axios.get(`${API_HOST}/api/threads/hot/all`, { params });
+    const response = await axios.get(`${API_HOST}/api/threads/hot`, { params });
     return response.data.data || [];
-  }
+  },
+
+  getGlobalTopThreads: async (params) => {
+    const response = await axios.get(`${API_HOST}/api/threads/global_top`, { params });
+    return response.data.data || [];
+  },
 };

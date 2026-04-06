@@ -90,4 +90,31 @@ router.get('/hot/all', async (req, res) => {
   }
 });
 
+router.get('/hot', async (req, res) => {
+  try {
+    const limit = parseInt(req.query.hotnum) || 10;
+    const threads = await threadsService.getHotThreadsWithoutGlobalTop(limit);
+    res.json({
+      message: '获取热门帖子成功',
+      data: threads
+    });
+  } catch (error) {
+    console.error('获取热门帖子失败:', error);
+    res.status(500).json({ message: '服务器错误' });
+  }
+});
+
+router.get('/global_top', async (req, res) => {
+  try {
+    const threads = await threadsService.getGlobalTopThreads();
+    res.json({
+      message: '获取全局置顶帖子成功',
+      data: threads
+    });
+  } catch (error) {
+    console.error('获取全局置顶帖子失败:', error);
+    res.status(500).json({ message: '服务器错误' });
+  }
+});
+
 module.exports = router;

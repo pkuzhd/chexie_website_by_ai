@@ -23,17 +23,30 @@ const otherBoards = computed(() => {
 });
 
 const hotThreads = ref([]);
+const globalTopThreads = ref([]);
 const isLoadingHot = ref(true);
+const isLoadingGlobalTop = ref(true);
 const showOthers = ref(false);
 
 const loadHotThreads = async () => {
   try {
-    const response = await boardService.getHotThreads({ limit: 10 });
+    const response = await boardService.getHotThreads({ hotnum: 15 });
     hotThreads.value = response || [];
   } catch (err) {
     console.error('加载热门帖子失败:', err);
   } finally {
     isLoadingHot.value = false;
+  }
+};
+
+const loadGlobalTopThreads = async () => {
+  try {
+    const response = await boardService.getGlobalTopThreads({});
+    globalTopThreads.value = response || [];
+  } catch (err) {
+    console.error('加载全局置顶帖子失败:', err);
+  } finally {
+    isLoadingGlobalTop.value = false;
   }
 };
 
@@ -57,6 +70,7 @@ onMounted(() => {
   getCurrentUser();
   loadBoards();
   loadHotThreads();
+  loadGlobalTopThreads();
 });
 </script>
 
@@ -111,7 +125,6 @@ onMounted(() => {
           </div>
           
           <div style="clear:both;"></div>
-          <br>
           <a href="javascript:void(0)" @click="showall" id="showothers" v-if="!showOthers">显示所有版面↓</a>
           <div id="others" v-show="showOthers" style="float:left;margin-top:20px;">
             <a 
@@ -133,6 +146,23 @@ onMounted(() => {
           <img src="/images/ltrd.png" width="150">
         </div>
         <div class="hot">
+        <div v-if="isLoadingGlobalTop" class="loading">
+            <p>加载中...</p>
+          </div>
+          <ul v-else>
+            <li v-for="thread in globalTopThreads" :key="`${thread.bid}-${thread.tid}`">
+              <a :href="`../content/?bid=${thread.bid}&tid=${thread.tid}&p=1#1`">
+                {{ thread.title }}
+              </a>
+              <br>
+              <span class='hint'>
+                <span class='hint2'>{{ thread.replyer || thread.author }}</span>
+                &nbsp;于&nbsp;
+                <span class='hint2'>{{ formatDate(thread.timestamp) }}</span>
+              </span>
+            </li>
+          </ul>
+          <hr>
           <div v-if="isLoadingHot" class="loading">
             <p>加载中...</p>
           </div>

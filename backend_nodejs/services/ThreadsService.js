@@ -56,6 +56,14 @@ class ThreadsService {
   async getHotThreads(limit = 10) {
     return await threadsRepository.findAllHot(limit);
   }
+
+  async getHotThreadsWithoutGlobalTop(limit = 10) {
+    return await threadsRepository.findHotThreadsWithoutGlobalTop(limit);
+  }
+
+  async getGlobalTopThreads() {
+    return await threadsRepository.findGlobalTopThreads();
+  }
 }
 
 module.exports = new ThreadsService();
