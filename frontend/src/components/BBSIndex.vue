@@ -126,10 +126,10 @@ onMounted(() => {
             <span class='desc'></span>
             <br>
             <span class='banzhu'>
-              版主：<a v-if="board.m1" class='author' :href="'../user?name=' + board.m1" target='_blank'>{{ board.m1 }}</a>
-              <a v-if="board.m2" class='author' :href="'../user?name=' + board.m2" target='_blank'>{{ board.m2 }}</a>
-              <a v-if="board.m3" class='author' :href="'../user?name=' + board.m3" target='_blank'>{{ board.m3 }}</a>
-              <a v-if="board.m4" class='author' :href="'../user?name=' + board.m4" target='_blank'>{{ board.m4 }}</a>
+              版主：<a v-if="board.m1" class='author' :href="'/bbs/user?name=' + board.m1" target='_blank' @click.stop>{{ board.m1 }}</a>
+              <a v-if="board.m2" class='author' :href="'/bbs/user?name=' + board.m2" target='_blank' @click.stop>{{ board.m2 }}</a>
+              <a v-if="board.m3" class='author' :href="'/bbs/user?name=' + board.m3" target='_blank' @click.stop>{{ board.m3 }}</a>
+              <a v-if="board.m4" class='author' :href="'/bbs/user?name=' + board.m4" target='_blank' @click.stop>{{ board.m4 }}</a>
             </span>
           </div>
           
