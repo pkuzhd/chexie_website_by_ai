@@ -6,6 +6,7 @@ import Navbar from '../components/Navbar.vue';
 import BBSMain from '../components/BBSMain.vue';
 import BBSContent from '../components/BBSContent.vue';
 import BBSIndex from '../components/BBSIndex.vue';
+import BBSUser from '../components/BBSUser.vue';
 import config from '../config';
 import { useCookie } from '../composables/useCookie';
 
@@ -78,6 +79,16 @@ const routes = [
     },
     meta: {
       requiresAuth: false // 帖子内容页面不需要登录即可访问
+    }
+  },
+  {
+    path: '/bbs/user',
+    name: 'BBSUser',
+    components: {
+      default: BBSUser
+    },
+    meta: {
+      requiresAuth: false
     }
   },
   {
