@@ -38,32 +38,33 @@ import authService from '../services/authService';
 const router = useRouter();
 const currentUser = ref(null);
 
-// 检查当前登录状态
-const checkLoginStatus = () => {
-  const userStr = localStorage.getItem('user');
-  if (userStr) {
-    currentUser.value = JSON.parse(userStr);
+const checkLoginStatus = async () => {
+  try {
+    const data = await authService.getCurrentUser();
+    if (data.username) {
+      currentUser.value = { username: data.username };
+    } else {
+      currentUser.value = null;
+    }
+  } catch (error) {
+    currentUser.value = null;
   }
 };
 
-// 登出处理
 const handleLogout = async () => {
   try {
     await authService.logout();
   } catch (error) {
     console.error('登出失败:', error);
   } finally {
-    // 清除本地存储
+    document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=localhost;';
     localStorage.removeItem('token');
-    localStorage.removeItem('user');
     currentUser.value = null;
-    
-    // 跳转到登录页或首页
-    router.push('/login');
+    router.push('/bbs/login');
   }
 };
 
-// 组件挂载时检查登录状态
 onMounted(() => {
   checkLoginStatus();
 });

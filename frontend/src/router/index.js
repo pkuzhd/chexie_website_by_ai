@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import axios from 'axios';
 import Login from '../components/Login.vue';
 import Register from '../components/Register.vue';
 import Navbar from '../components/Navbar.vue';
@@ -7,10 +6,7 @@ import BBSMain from '../components/BBSMain.vue';
 import BBSContent from '../components/BBSContent.vue';
 import BBSIndex from '../components/BBSIndex.vue';
 import BBSUser from '../components/BBSUser.vue';
-import config from '../config';
-import { useCookie } from '../composables/useCookie';
-
-const { getCookie } = useCookie();
+import authService from '../services/authService';
 
 
 // 导入其他组件（示例）
@@ -123,54 +119,20 @@ router.addRoute({
   redirect: '/bbs/index'
 });
 
-// 验证token是否有效的函数
-const verifyToken = async () => {
-  try {
-    const token = getCookie('token');
-
-    const response = await axios.get(`${config.API_HOST}/api/auth_legacy/current`, {
-      withCredentials: true
-    });
-    return response.data && response.data.username;
-  } catch (error) {
-    console.error('验证token失败:', error);
-    return false;
-  }
-};
-
-// 路由守卫：检查是否需要登录
 router.beforeEach(async (to, from, next) => {
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
-  const isAuthenticated = localStorage.getItem('token') !== null;
 
-  const legacyToken = getCookie('token');
-  const isLegacyAuthenticated = legacyToken !== null;
-
-  console.log('legacyToken:', legacyToken);
-  console.log('token:', localStorage.getItem('token'));
-  console.log('requiresAuth:', requiresAuth);
-  console.log('isAuthenticated:', isAuthenticated);
-  
-  // 如果有legacyToken，向后端确认是否有效
   let isTokenValid = false;
-  if (isLegacyAuthenticated) {
-    isTokenValid = await verifyToken();
-    console.log('token验证结果:', isTokenValid);
+  if (requiresAuth || to.path === '/bbs/login') {
+    isTokenValid = await authService.verifyToken();
   }
-  
-  if (requiresAuth && !isAuthenticated && !isTokenValid) {
-    console.log('需要登录但未登录，跳转到登录页并携带原路径作为redirect参数');
-    // 需要登录但未登录，跳转到登录页并携带原路径作为redirect参数
+
+  if (requiresAuth && !isTokenValid) {
     next({ path: '/bbs/login', query: { redirect: to.fullPath } });
-  } else if (!requiresAuth && (isAuthenticated || isTokenValid) && to.path === '/bbs/login') {
-    
-    console.log('已登录且访问登录页，检查是否有redirect参数');
-    // 已登录且访问登录页，检查是否有redirect参数
+  } else if (to.path === '/bbs/login' && isTokenValid) {
     const redirectPath = to.query.redirect || '/';
     next(redirectPath);
   } else {
-    console.log('其他情况正常访问');
-    // 其他情况正常访问
     next();
   }
 });

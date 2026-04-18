@@ -58,19 +58,17 @@ const handleLogin = async () => {
   
   try {
     const response = await authService.login(form.username, form.password);
-    
-    // 保存token和用户信息到本地存储
-    // localStorage.setItem('token', response.data.token);
-    localStorage.setItem('currentUser', JSON.stringify(response.data.user));
+    const result = response.data;
 
-    // 将 token 写入 cookie，确保 getCookie 能正确获取
-    document.cookie = `token=${response.data.token}; path=/; secure; samesite=strict`;
-    
-    // 登录成功后跳转到原页面或首页
+    if (result.code !== 0) {
+      error.value = result.msg || '登录失败，请检查用户名和密码';
+      return;
+    }
+
     const redirectPath = router.currentRoute.value.query.redirect || '/';
     router.push(redirectPath);
   } catch (err) {
-    error.value = err.response?.data?.message || '登录失败，请检查用户名和密码';
+    error.value = err.response?.data?.msg || '登录失败，请检查用户名和密码';
   } finally {
     isLoading.value = false;
   }

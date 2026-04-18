@@ -35,7 +35,7 @@ router.post('/login', async (req, res) => {
 
 router.post('/logout', async (req, res) => {
   try {
-    const { token } = req.body;
+    const token = req.body.token || req.cookies.token;
     const clientIp = authLegacyService.getClientIp(req);
 
     if (!token) {
