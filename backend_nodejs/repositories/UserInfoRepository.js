@@ -50,7 +50,7 @@ class UserInfoRepository extends BaseRepository {
   async findByUsernamePublic(username) {
     return await this.findOne({
       where: { username },
-      attributes: ['username', 'sex', 'icon', 'intro', 'regdate', 'post', 'reply', 'score']
+      attributes: ['username', 'sex', 'icon', 'intro', 'regdate', 'post', 'reply', 'score', 'qq', 'mail', 'hobby', 'place', 'lastdate', 'star', 'rights', 'extr']
     });
   }
 

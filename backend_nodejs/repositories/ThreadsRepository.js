@@ -62,6 +62,16 @@ class ThreadsRepository extends BaseRepository {
     return threads;
   }
 
+  async findRecentByAuthor(author, limit = 10) {
+    return await this.findAll({
+      where: { author },
+      attributes: ['bid', 'tid', 'title', 'timestamp'],
+      order: [['timestamp', 'DESC']],
+      limit,
+      raw: true
+    });
+  }
+
   async findGlobalTopThreads() {
     const globalTopIds = await ThreadGlobalTop.findAll({
       attributes: ['bid', 'tid'],

@@ -1,5 +1,6 @@
 const BaseRepository = require('./BaseRepository');
 const Posts = require('../models/Posts');
+const { Op } = require('sequelize');
 
 class PostsRepository extends BaseRepository {
   constructor() {
@@ -28,6 +29,16 @@ class PostsRepository extends BaseRepository {
   async findOneByFid(fid) {
     return await this.findOne({
       where: { fid }
+    });
+  }
+
+  async findRecentByAuthor(author, limit = 10) {
+    return await this.findAll({
+      where: { author, pid: { [Op.gt]: 1 } },
+      attributes: ['bid', 'tid', 'pid', 'title', 'replytime'],
+      order: [['replytime', 'DESC']],
+      limit,
+      raw: true
     });
   }
 }

@@ -61,6 +61,10 @@ class ThreadsService {
     return await threadsRepository.findHotThreadsWithoutGlobalTop(limit);
   }
 
+  async getRecentThreadsByAuthor(author, limit = 10) {
+    return await threadsRepository.findRecentByAuthor(author, limit);
+  }
+
   async getGlobalTopThreads() {
     return await threadsRepository.findGlobalTopThreads();
   }

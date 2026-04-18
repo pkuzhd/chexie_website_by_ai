@@ -52,6 +52,21 @@ router.get('/', requireAuthForBid1, async (req, res) => {
   }
 });
 
+router.get('/user/:username', async (req, res) => {
+  try {
+    const { username } = req.params;
+    const limit = parseInt(req.query.limit) || 10;
+    const threads = await threadsService.getRecentThreadsByAuthor(username, limit);
+    res.json({
+      message: '获取用户最近发帖成功',
+      data: threads
+    });
+  } catch (error) {
+    console.error('获取用户最近发帖失败:', error);
+    res.status(500).json({ message: '服务器错误' });
+  }
+});
+
 router.get('/:bid/:tid', requireAuthForBid1, async (req, res) => {
   try {
     const { bid, tid } = req.params;

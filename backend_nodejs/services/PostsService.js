@@ -33,6 +33,10 @@ class PostsService {
     return post;
   }
 
+  async getRecentPostsByAuthor(author, limit = 10) {
+    return await postsRepository.findRecentByAuthor(author, limit);
+  }
+
   async getPostByFid(fid) {
     const post = await postsRepository.findOneByFid(fid);
     if (!post) {
