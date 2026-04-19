@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Login from '../components/Login.vue';
+import LoginOld from '../components/LoginOld.vue';
 import Register from '../components/Register.vue';
 import Navbar from '../components/Navbar.vue';
 import BBSMain from '../components/BBSMain.vue';
@@ -90,15 +91,19 @@ const routes = [
   {
     path: '/bbs/login',
     name: 'Login',
-    component: Login,
+    components: {
+      default: LoginOld
+    },
     meta: {
-      requiresAuth: false // 不需要登录即可访问
+      requiresAuth: false
     }
   },
   {
     path: '/bbs/register',
     name: 'Register',
-    component: Register,
+    components: {
+      default: Register
+    },
     meta: {
       requiresAuth: false // 不需要登录即可访问
     }
